@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatCPF, nextConsultationDate, saleFollowupDate, validateCPF } from '@/lib/utils'
-import { ArrowLeft, AlertTriangle, CheckCircle2, Bell } from 'lucide-react'
+import { formatCPF, formatWhatsApp, nextConsultationDate, saleFollowupDate, validateCPF } from '@/lib/utils'
+import { ArrowLeft, AlertTriangle, CheckCircle2, Bell, UserCheck } from 'lucide-react'
 import type { Seller, Status, MotorcycleType, LossReason } from '@/types'
 
 const REQUIRES_CREDIT_STATUSES = ['Consulta com restrição', 'Financiamento negado']
@@ -29,6 +29,8 @@ export default function NovoAtendimentoPage() {
   const [lossReasons, setLossReasons] = useState<LossReason[]>([])
   const [cpfWarning, setCpfWarning] = useState<string | null>(null)
   const [existingId, setExistingId] = useState<string | null>(null)
+  const [existingClient, setExistingClient] = useState<{ name: string; phone: string | null } | null>(null)
+  const [reused, setReused] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -82,16 +84,32 @@ export default function NovoAtendimentoPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('customer_services')
-      .select('id, name')
+      .select('id, name, phone')
       .eq('cpf', clean)
+      .order('created_at', { ascending: false })
       .limit(1)
     if (data && data.length > 0) {
-      setCpfWarning(`CPF já cadastrado: ${data[0].name}`)
+      setCpfWarning(`Cliente já cadastrado: ${data[0].name}`)
       setExistingId(data[0].id)
+      setExistingClient({ name: data[0].name, phone: data[0].phone })
     } else {
       setCpfWarning(null)
       setExistingId(null)
+      setExistingClient(null)
+      setReused(false)
     }
+  }
+
+  // Reaproveita os dados do cliente já cadastrado (reconsulta / novo atendimento do mesmo cliente)
+  function reuseClient() {
+    if (!existingClient) return
+    setForm((f) => ({
+      ...f,
+      name: existingClient.name,
+      phone: existingClient.phone ? formatWhatsApp(existingClient.phone) : f.phone,
+    }))
+    setReused(true)
+    setErrors((e) => { const n = { ...e }; delete n.name; return n })
   }
 
   function set(key: string, value: string) {
@@ -264,15 +282,28 @@ export default function NovoAtendimentoPage() {
                     error={errors.cpf}
                     placeholder="000.000.000-00"
                   />
-                  {cpfWarning && (
+                  {cpfWarning && !reused && (
                     <div className="mt-2 flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200">
                       <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                      <div className="text-xs text-amber-700">
+                      <div className="text-xs text-amber-700 flex-1">
                         <p className="font-medium">{cpfWarning}</p>
-                        <button type="button" onClick={() => router.push(`/atendimentos/${existingId}`)} className="underline mt-0.5">
-                          Ver atendimento existente
-                        </button>
+                        <p className="mt-0.5">Reaproveite os dados em vez de digitar de novo:</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <button type="button" onClick={reuseClient} className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline">
+                            <UserCheck className="h-3.5 w-3.5" />
+                            Usar dados deste cliente
+                          </button>
+                          <button type="button" onClick={() => router.push(`/atendimentos/${existingId}`)} className="underline">
+                            Ver atendimento
+                          </button>
+                        </div>
                       </div>
+                    </div>
+                  )}
+                  {reused && (
+                    <div className="mt-2 flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <UserCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <p className="text-xs text-emerald-700">Dados do cliente preenchidos. É só registrar o novo atendimento/consulta.</p>
                     </div>
                   )}
                 </div>
