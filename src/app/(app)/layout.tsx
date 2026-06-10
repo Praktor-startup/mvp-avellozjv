@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Tour } from '@/components/onboarding/tour'
 import { createClient } from '@/lib/supabase/client'
-import { Menu, Bell } from 'lucide-react'
+import { Menu, Bell, HelpCircle } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -36,12 +36,21 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <span className="text-sm font-bold text-slate-900">Avelloz</span>
           </div>
-          <Link
-            href="/lembretes"
-            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors -mr-1"
-          >
-            <Bell className="w-5 h-5" />
-          </Link>
+          <div className="flex items-center -mr-1">
+            <button
+              onClick={() => window.dispatchEvent(new Event('avelloz:start-tour'))}
+              aria-label="Refazer tutorial"
+              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            >
+              <HelpCircle className="w-5 h-5" />
+            </button>
+            <Link
+              href="/lembretes"
+              className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+            </Link>
+          </div>
         </header>
 
         <main className="flex-1 flex flex-col overflow-hidden">
