@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
@@ -63,16 +63,19 @@ export default function AtendimentosPage() {
     if (filterReminder === 'yes') query = query.eq('reminder_active', true)
 
     const { data } = await query
-    let rows = (data ?? []) as unknown as ServiceRow[]
-    if (search) {
-      const s = search.toLowerCase()
-      rows = rows.filter(
-        (r) => r.name.toLowerCase().includes(s) || r.cpf.replace(/\D/g, '').includes(s.replace(/\D/g, ''))
-      )
-    }
-    setServices(rows)
+    setServices((data ?? []) as unknown as ServiceRow[])
     setLoading(false)
-  }, [search, filterSeller, filterStatus, filterReminder])
+  }, [filterSeller, filterStatus, filterReminder])
+
+  // Busca filtra no cliente — não refaz a query no banco a cada tecla
+  const filtered = useMemo(() => {
+    if (!search) return services
+    const s = search.toLowerCase()
+    const digits = s.replace(/\D/g, '')
+    return services.filter(
+      (r) => r.name.toLowerCase().includes(s) || (digits && r.cpf.replace(/\D/g, '').includes(digits))
+    )
+  }, [services, search])
 
   useEffect(() => {
     const supabase = createClient()
@@ -91,7 +94,7 @@ export default function AtendimentosPage() {
     <div className="flex flex-col flex-1 overflow-hidden">
       <Header
         title="Atendimentos"
-        subtitle={loading ? '' : `${services.length} registro${services.length !== 1 ? 's' : ''}`}
+        subtitle={loading ? '' : `${filtered.length} registro${filtered.length !== 1 ? 's' : ''}`}
         actions={
           <Button size="sm" onClick={() => router.push('/atendimentos/novo')}>
             <Plus className="h-4 w-4" />
@@ -184,7 +187,7 @@ export default function AtendimentosPage() {
 
           {loading ? (
             <div className="py-16 text-center text-sm text-slate-400">Carregando...</div>
-          ) : services.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-slate-400 text-sm">Nenhum atendimento encontrado</p>
             </div>
@@ -192,7 +195,7 @@ export default function AtendimentosPage() {
             <>
               {/* Cards — mobile */}
               <div className="sm:hidden space-y-2">
-                {services.map((s) => (
+                {filtered.map((s) => (
                   <Link
                     key={s.id}
                     href={`/atendimentos/${s.id}`}
@@ -240,7 +243,7 @@ export default function AtendimentosPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {services.map((s) => (
+                    {filtered.map((s) => (
                       <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{formatDate(s.entry_date)}</td>
                         <td className="px-4 py-3">
