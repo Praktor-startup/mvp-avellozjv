@@ -1,1 +1,0 @@
-[    2015ms] [ERROR] Failed to load resource: the server responded with a status of 406 () @ https://api.praktor.com.br/rest/v1/customer_services?select=*%2Cseller%3Aseller_id%28*%29%2Cmotorcycle_type%3Amotorcycle_type_id%28*%29%2Cstatus%3Astatus_id%28*%29%2Closs_reason%3Aloss_reason_id%28*%29&id=eq.c103b719-7e51-4e01-bfcb-692a7623c2b4:0

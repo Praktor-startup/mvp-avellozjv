@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .claude/settings.local.json
+
+# Artefatos de teste (Playwright/verificador)
+.playwright-mcp/
+/0*-*.png
