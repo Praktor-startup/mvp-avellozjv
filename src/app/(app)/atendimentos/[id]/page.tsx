@@ -78,6 +78,14 @@ export default function AtendimentoDetailPage() {
       .eq('customer_service_id', id).eq('type', 'sale_followup').eq('status', 'pending')
   }
 
+  // Conclui reconsultas pendentes — registrar uma nova consulta cumpre o lembrete,
+  // então o cliente sai da lista "Reconsultas pendentes" do dashboard.
+  async function completeReconsultations() {
+    const supabase = createClient()
+    await supabase.from('reminders').update({ status: 'completed' })
+      .eq('customer_service_id', id).eq('type', 'reconsultation').eq('status', 'pending')
+  }
+
   async function applyOutcome(kind: 'closed' | 'lost', lossReasonId?: string) {
     setSavingOutcome(kind)
     const supabase = createClient()
@@ -85,11 +93,14 @@ export default function AtendimentoDetailPage() {
       ? statuses.find((s) => s.is_closed)
       : statuses.find((s) => s.is_lost && !s.generates_reminder)
     if (!target) { setSavingOutcome(null); return }
+    // Venda fechada/perdida encerra o ciclo: limpa reconsulta pendente e a flag
     await supabase.from('customer_services').update({
       status_id: target.id,
       loss_reason_id: kind === 'lost' ? (lossReasonId ?? null) : null,
+      reminder_active: false,
+      next_consultation_date: null,
     }).eq('id', id)
-    await completeSaleFollowups()
+    await Promise.all([completeSaleFollowups(), completeReconsultations()])
     await reload()
     setShowLost(false)
     setLostReasonId('')
@@ -141,7 +152,13 @@ export default function AtendimentoDetailPage() {
       .select()
       .single()
 
+    // Registrar uma consulta definitiva (aprovado/restrição/negado) cumpre a
+    // reconsulta pendente — o cliente deve sair do dashboard de reconsultas.
+    const definitive = ['approved', 'restriction', 'denied'].includes(checkForm.result)
+    if (definitive) await completeReconsultations()
+
     if (nextDate) {
+      // nova restrição/negação → reabre o ciclo com uma nova reconsulta
       await Promise.all([
         supabase.from('customer_services').update({
           reminder_active: true,
@@ -156,6 +173,12 @@ export default function AtendimentoDetailPage() {
           status: 'pending',
         }),
       ])
+    } else if (definitive) {
+      // aprovado → não há mais reconsulta pendente; limpa a flag e a data
+      await supabase.from('customer_services').update({
+        reminder_active: false,
+        next_consultation_date: null,
+      }).eq('id', id)
     }
 
     // Consulta aprovada: define o estado da venda já aqui no detalhe
