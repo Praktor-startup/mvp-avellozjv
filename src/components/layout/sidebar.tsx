@@ -14,8 +14,8 @@ import {
   Tag,
   AlertCircle,
   BarChart2,
-  ChevronRight,
   LogOut,
+  X,
 } from 'lucide-react'
 
 const nav = [
@@ -31,7 +31,12 @@ const nav = [
   { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
@@ -45,6 +50,9 @@ export function Sidebar() {
       .then(({ count }) => setPendingCount(count ?? 0))
   }, [pathname])
 
+  // Fecha o drawer ao navegar no mobile
+  useEffect(() => { onClose() }, [pathname])
+
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -52,12 +60,12 @@ export function Sidebar() {
     router.refresh()
   }
 
-  return (
-    <aside className="w-60 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
+  const inner = (
+    <aside className="w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-100">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
             <Bike className="h-4 w-4 text-white" />
           </div>
           <div>
@@ -65,14 +73,19 @@ export function Sidebar() {
             <p className="text-xs text-slate-500 mt-0.5">Gestão comercial</p>
           </div>
         </div>
+        {/* Botão fechar só no mobile */}
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {nav.map((item, i) => {
-          if ('divider' in item) {
-            return <div key={i} className="my-2 border-t border-slate-100" />
-          }
+          if ('divider' in item) return <div key={i} className="my-2 border-t border-slate-100" />
 
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           const Icon = item.icon
@@ -82,7 +95,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
                 isActive
                   ? 'bg-indigo-50 text-indigo-700'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -95,23 +108,45 @@ export function Sidebar() {
                   {pendingCount > 99 ? '99+' : pendingCount}
                 </span>
               )}
-              {isActive && <ChevronRight className="h-3.5 w-3.5 text-indigo-400" />}
             </Link>
           )
         })}
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-slate-100 space-y-2">
+      <div className="px-4 py-3 border-t border-slate-100">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
+          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Sair
         </button>
-        <p className="text-xs text-slate-400 text-center">MVP Avelloz v1.0</p>
       </div>
     </aside>
+  )
+
+  return (
+    <>
+      {/* Desktop: sempre visível */}
+      <div className="hidden lg:flex h-screen sticky top-0">
+        {inner}
+      </div>
+
+      {/* Mobile: drawer */}
+      {open && (
+        <>
+          {/* Overlay */}
+          <div
+            className="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          {/* Drawer */}
+          <div className="lg:hidden fixed inset-y-0 left-0 z-50 flex">
+            {inner}
+          </div>
+        </>
+      )}
+    </>
   )
 }

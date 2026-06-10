@@ -239,6 +239,24 @@ export default function LoginPage() {
               Ir para o login
             </button>
           )}
+
+          {/* Acesso rápido demo */}
+          {mode === 'login' && !loading && (
+            <div className="mt-6 pt-5 border-t border-slate-100">
+              <p className="text-xs text-slate-400 text-center mb-3">Acesso rápido para demonstração</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('demo@avelloz.com.br')
+                  setPassword('demo1234')
+                  setError('')
+                }}
+                className="w-full text-sm text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg py-2 px-3 transition-colors"
+              >
+                Entrar como Demo
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
