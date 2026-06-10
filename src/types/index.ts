@@ -38,6 +38,7 @@ export interface CustomerService {
   id: string
   name: string
   cpf: string
+  phone: string | null
   entry_date: string
   seller_id: string | null
   motorcycle_type_id: string | null

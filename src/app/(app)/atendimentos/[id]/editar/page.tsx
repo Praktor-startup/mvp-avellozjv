@@ -29,7 +29,7 @@ export default function EditarAtendimentoPage() {
   const [originalStatus, setOriginalStatus] = useState<string>('')
 
   const [form, setForm] = useState({
-    name: '', cpf: '', entry_date: '', seller_id: '',
+    name: '', cpf: '', phone: '', entry_date: '', seller_id: '',
     motorcycle_type_id: '', status_id: '', loss_reason_id: '', notes: '',
   })
 
@@ -54,6 +54,7 @@ export default function EditarAtendimentoPage() {
         setForm({
           name: d.name ?? '',
           cpf: d.cpf ?? '',
+          phone: d.phone ?? '',
           entry_date: entryDate,
           seller_id: d.seller_id ?? '',
           motorcycle_type_id: d.motorcycle_type_id ?? '',
@@ -97,6 +98,7 @@ export default function EditarAtendimentoPage() {
     const supabase = createClient()
     const { error } = await supabase.from('customer_services').update({
       name: form.name.trim(),
+      phone: form.phone.replace(/\D/g, '') || null,
       entry_date: form.entry_date,
       seller_id: form.seller_id || null,
       motorcycle_type_id: form.motorcycle_type_id || null,
@@ -153,6 +155,19 @@ export default function EditarAtendimentoPage() {
                 <Input label="CPF" value={formatCPF(form.cpf)} disabled hint="CPF não pode ser alterado" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Telefone / WhatsApp"
+                  value={form.phone}
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, '').slice(0, 11)
+                    const masked = v.length > 10
+                      ? v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+                      : v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+                    set('phone', masked)
+                  }}
+                  placeholder="(00) 00000-0000"
+                  hint="Para contato e recuperação do cliente"
+                />
                 <Input label="Data de entrada" type="datetime-local" required value={form.entry_date} onChange={(e) => set('entry_date', e.target.value)} />
                 <Select label="Vendedor responsável" required value={form.seller_id} onChange={(e) => set('seller_id', e.target.value)}
                   placeholder="Selecione" options={sellers.map((s) => ({ value: s.id, label: s.name }))} error={errors.seller_id} />

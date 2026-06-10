@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/layout/header'
@@ -11,52 +11,99 @@ import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { formatDate, formatDateTime, formatCPF, creditResultLabel, creditResultColor, nextConsultationDate, cn } from '@/lib/utils'
-import { ArrowLeft, Edit, Plus, Bell, Upload, FileText, CheckCircle, AlertTriangle } from 'lucide-react'
+import {
+  formatDate, formatDateTime, formatCPF, formatPhone, whatsappHref,
+  creditResultLabel, creditResultColor, nextConsultationDate, saleFollowupDate, cn,
+} from '@/lib/utils'
+import {
+  ArrowLeft, Edit, Plus, Bell, Upload, FileText, CheckCircle, AlertTriangle,
+  MessageCircle, ShoppingBag, XCircle,
+} from 'lucide-react'
 import Link from 'next/link'
-import type { CustomerService, CreditCheck, Status } from '@/types'
+import type { CustomerService, CreditCheck, Status, LossReason } from '@/types'
 
 export default function AtendimentoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [service, setService] = useState<CustomerService | null>(null)
   const [checks, setChecks] = useState<CreditCheck[]>([])
+  const [statuses, setStatuses] = useState<Status[]>([])
+  const [lossReasons, setLossReasons] = useState<LossReason[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddCheck, setShowAddCheck] = useState(false)
   const [addingCheck, setAddingCheck] = useState(false)
+  const [showLost, setShowLost] = useState(false)
+  const [lostReasonId, setLostReasonId] = useState('')
+  const [savingOutcome, setSavingOutcome] = useState<string | null>(null)
 
-  const [checkForm, setCheckForm] = useState({ check_date: '', result: '', notes: '' })
+  const [checkForm, setCheckForm] = useState({ check_date: '', result: '', notes: '', sale_outcome: 'pending', loss_reason_id: '' })
   const [checkFile, setCheckFile] = useState<File | null>(null)
   const [checkErrors, setCheckErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const SELECT = `*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`
+
+  const reload = useCallback(async () => {
+    const supabase = createClient()
+    const [svc, chk] = await Promise.all([
+      supabase.from('customer_services').select(SELECT).eq('id', id).single(),
+      supabase.from('credit_checks').select('*').eq('customer_service_id', id).order('check_date', { ascending: false }),
+    ])
+    if (svc.data) setService(svc.data as CustomerService)
+    if (chk.data) setChecks(chk.data as CreditCheck[])
+  }, [id, SELECT])
+
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const [svc, chk] = await Promise.all([
-        supabase
-          .from('customer_services')
-          .select(`*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`)
-          .eq('id', id)
-          .single(),
-        supabase
-          .from('credit_checks')
-          .select('*')
-          .eq('customer_service_id', id)
-          .order('check_date', { ascending: false }),
+      const [svc, chk, st, lr] = await Promise.all([
+        supabase.from('customer_services').select(SELECT).eq('id', id).single(),
+        supabase.from('credit_checks').select('*').eq('customer_service_id', id).order('check_date', { ascending: false }),
+        supabase.from('statuses').select('*').eq('active', true).order('sort_order'),
+        supabase.from('loss_reasons').select('*').eq('active', true).order('description'),
       ])
       if (svc.data) setService(svc.data as CustomerService)
       if (chk.data) setChecks(chk.data as CreditCheck[])
+      setStatuses((st.data ?? []) as Status[])
+      setLossReasons((lr.data ?? []) as LossReason[])
       setLoading(false)
     }
     load()
-  }, [id])
+  }, [id, SELECT])
+
+  // Encerra lembretes de cobrança de fechamento ainda pendentes deste atendimento
+  async function completeSaleFollowups() {
+    const supabase = createClient()
+    await supabase.from('reminders').update({ status: 'completed' })
+      .eq('customer_service_id', id).eq('type', 'sale_followup').eq('status', 'pending')
+  }
+
+  async function applyOutcome(kind: 'closed' | 'lost', lossReasonId?: string) {
+    setSavingOutcome(kind)
+    const supabase = createClient()
+    const target = kind === 'closed'
+      ? statuses.find((s) => s.is_closed)
+      : statuses.find((s) => s.is_lost && !s.generates_reminder)
+    if (!target) { setSavingOutcome(null); return }
+    await supabase.from('customer_services').update({
+      status_id: target.id,
+      loss_reason_id: kind === 'lost' ? (lossReasonId ?? null) : null,
+    }).eq('id', id)
+    await completeSaleFollowups()
+    await reload()
+    setShowLost(false)
+    setLostReasonId('')
+    setSavingOutcome(null)
+  }
 
   async function handleAddCheck(e: React.FormEvent) {
     e.preventDefault()
     const errs: Record<string, string> = {}
     if (!checkForm.check_date) errs.check_date = 'Obrigatório'
     if (!checkForm.result) errs.result = 'Obrigatório'
+    if (checkForm.result === 'approved' && checkForm.sale_outcome === 'lost' && !checkForm.loss_reason_id) {
+      errs.loss_reason_id = 'Informe o motivo'
+    }
     if (Object.keys(errs).length) { setCheckErrors(errs); return }
 
     setAddingCheck(true)
@@ -76,9 +123,9 @@ export default function AtendimentoDetailPage() {
       }
     }
 
-    // Lembrete é gerado exclusivamente pelo resultado da consulta
-    const generates = ['restriction', 'denied'].includes(checkForm.result)
-    const nextDate = generates ? nextConsultationDate(checkForm.check_date) : null
+    // Lembrete de reconsulta é gerado pelo resultado restrição/negado
+    const generatesReconsult = ['restriction', 'denied'].includes(checkForm.result)
+    const nextDate = generatesReconsult ? nextConsultationDate(checkForm.check_date) : null
 
     const { data: newCheck } = await supabase
       .from('credit_checks')
@@ -111,19 +158,37 @@ export default function AtendimentoDetailPage() {
       ])
     }
 
-    setChecks((prev) => [newCheck as CreditCheck, ...prev])
-    setCheckForm({ check_date: '', result: '', notes: '' })
+    // Consulta aprovada: define o estado da venda já aqui no detalhe
+    if (checkForm.result === 'approved') {
+      if (checkForm.sale_outcome === 'closed') {
+        const closed = statuses.find((s) => s.is_closed)
+        if (closed) await supabase.from('customer_services').update({ status_id: closed.id, loss_reason_id: null }).eq('id', id)
+        await completeSaleFollowups()
+      } else if (checkForm.sale_outcome === 'lost') {
+        const lost = statuses.find((s) => s.is_lost && !s.generates_reminder)
+        if (lost) await supabase.from('customer_services').update({ status_id: lost.id, loss_reason_id: checkForm.loss_reason_id || null }).eq('id', id)
+        await completeSaleFollowups()
+      } else {
+        // aguardando fechamento — vira "Consulta aprovada" + lembrete de cobrança
+        const approved = statuses.find((s) => s.description === 'Consulta aprovada')
+        if (approved) await supabase.from('customer_services').update({ status_id: approved.id }).eq('id', id)
+        await supabase.from('reminders').insert({
+          customer_service_id: id,
+          credit_check_id: newCheck?.id,
+          seller_id: service?.seller_id,
+          due_date: saleFollowupDate(checkForm.check_date),
+          type: 'sale_followup',
+          status: 'pending',
+        })
+      }
+    }
+
+    setCheckForm({ check_date: '', result: '', notes: '', sale_outcome: 'pending', loss_reason_id: '' })
     setCheckFile(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
     setShowAddCheck(false)
     setAddingCheck(false)
-
-    const { data } = await supabase
-      .from('customer_services')
-      .select(`*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`)
-      .eq('id', id)
-      .single()
-    if (data) setService(data as CustomerService)
+    await reload()
   }
 
   if (loading) {
@@ -145,6 +210,12 @@ export default function AtendimentoDetailPage() {
   }
 
   const status = service.status as Status | null
+  const isAwaitingSale = status?.description === 'Consulta aprovada'
+  const isClosed = !!status?.is_closed
+  const isLost = !!status?.is_lost
+  const customerWa = service.phone
+    ? whatsappHref(service.phone, `Olá ${service.name.split(' ')[0]}, tudo bem? Aqui é da Avelloz.`)
+    : null
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -168,6 +239,34 @@ export default function AtendimentoDetailPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+        {/* Desfecho da venda — crédito aprovado aguardando fechamento */}
+        {isAwaitingSale && (
+          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <h3 className="text-sm font-semibold text-emerald-900">Crédito aprovado — aguardando fechamento</h3>
+                </div>
+                <p className="text-sm text-emerald-700 mt-1">
+                  Esse é o lead mais quente. A moto foi vendida?
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button size="sm" loading={savingOutcome === 'closed'} onClick={() => applyOutcome('closed')} className="bg-emerald-600 hover:bg-emerald-700">
+                  <ShoppingBag className="h-4 w-4" />
+                  Moto vendida
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setShowLost(true)}>
+                  <XCircle className="h-4 w-4" />
+                  Não vendeu
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
           <div className="lg:col-span-2 space-y-5">
@@ -187,6 +286,7 @@ export default function AtendimentoDetailPage() {
                   {[
                     { label: 'Nome', value: service.name },
                     { label: 'CPF', value: formatCPF(service.cpf) },
+                    { label: 'Telefone', value: formatPhone(service.phone) },
                     { label: 'Entrada', value: formatDateTime(service.entry_date) },
                     { label: 'Vendedor', value: service.seller?.name ?? '—' },
                     { label: 'Moto de interesse', value: service.motorcycle_type?.model ?? '—' },
@@ -261,6 +361,50 @@ export default function AtendimentoDetailPage() {
           </div>
 
           <div className="space-y-4">
+            {/* Contato */}
+            <Card>
+              <CardHeader><CardTitle className="text-sm">Contato</CardTitle></CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                {customerWa ? (
+                  <a href={customerWa} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full h-9 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors">
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp do cliente
+                  </a>
+                ) : (
+                  <p className="text-xs text-slate-400">Sem telefone do cliente. <Link href={`/atendimentos/${id}/editar`} className="text-indigo-600 underline">Adicionar</Link></p>
+                )}
+                {service.seller?.whatsapp && (
+                  <a href={whatsappHref(service.seller.whatsapp)} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full h-9 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors">
+                    <MessageCircle className="h-4 w-4 text-emerald-600" />
+                    Vendedor: {service.seller.name}
+                  </a>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ações rápidas */}
+            {!isClosed && !isLost && (
+              <Card>
+                <CardHeader><CardTitle className="text-sm">Ações rápidas</CardTitle></CardHeader>
+                <CardContent className="pt-0 space-y-2">
+                  <Button variant="outline" size="sm" className="w-full justify-start" loading={savingOutcome === 'closed'} onClick={() => applyOutcome('closed')}>
+                    <ShoppingBag className="h-4 w-4 text-emerald-600" />
+                    Marcar venda fechada
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setShowLost(true)}>
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    Marcar venda perdida
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setShowAddCheck(true)}>
+                    <Plus className="h-4 w-4 text-indigo-600" />
+                    Registrar reconsulta
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {service.reminder_active && service.next_consultation_date && (
               <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -296,6 +440,7 @@ export default function AtendimentoDetailPage() {
         </div>
       </div>
 
+      {/* Modal: nova consulta */}
       <Modal open={showAddCheck} onClose={() => setShowAddCheck(false)} title="Nova consulta de crédito" size="md">
         <form onSubmit={handleAddCheck} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -322,6 +467,41 @@ export default function AtendimentoDetailPage() {
               error={checkErrors.result}
             />
           </div>
+
+          {/* Aprovado: define a situação da venda em vez de só registrar */}
+          {checkForm.result === 'approved' && (
+            <div className="space-y-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+              <Select
+                label="Situação da venda"
+                required
+                value={checkForm.sale_outcome}
+                onChange={(e) => setCheckForm((f) => ({ ...f, sale_outcome: e.target.value }))}
+                options={[
+                  { value: 'pending', label: 'Aguardando fechamento (decidir depois)' },
+                  { value: 'closed', label: 'Já fechou a venda' },
+                  { value: 'lost', label: 'Não fechou' },
+                ]}
+              />
+              {checkForm.sale_outcome === 'pending' && checkForm.check_date && (
+                <p className="text-xs text-emerald-700">
+                  Lembrete de cobrança será criado para{' '}
+                  <strong>{new Date(saleFollowupDate(checkForm.check_date) + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>.
+                </p>
+              )}
+              {checkForm.sale_outcome === 'lost' && (
+                <Select
+                  label="Motivo da perda"
+                  required
+                  value={checkForm.loss_reason_id}
+                  onChange={(e) => setCheckForm((f) => ({ ...f, loss_reason_id: e.target.value }))}
+                  placeholder="Por que não fechou?"
+                  options={lossReasons.map((l) => ({ value: l.id, label: l.description }))}
+                  error={checkErrors.loss_reason_id}
+                />
+              )}
+            </div>
+          )}
+
           <Textarea
             label="Observações"
             value={checkForm.notes}
@@ -359,6 +539,32 @@ export default function AtendimentoDetailPage() {
             <Button type="submit" loading={addingCheck}>Salvar consulta</Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal: marcar venda perdida (motivo obrigatório) */}
+      <Modal open={showLost} onClose={() => setShowLost(false)} title="Venda não fechou" size="sm">
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-slate-600">Qual o motivo da perda?</p>
+          <Select
+            label="Motivo da perda"
+            required
+            value={lostReasonId}
+            onChange={(e) => setLostReasonId(e.target.value)}
+            placeholder="Selecione o motivo"
+            options={lossReasons.map((l) => ({ value: l.id, label: l.description }))}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setShowLost(false)}>Cancelar</Button>
+            <Button
+              variant="danger"
+              loading={savingOutcome === 'lost'}
+              disabled={!lostReasonId}
+              onClick={() => applyOutcome('lost', lostReasonId)}
+            >
+              Confirmar perda
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

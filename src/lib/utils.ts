@@ -43,6 +43,33 @@ export function nextConsultationDate(fromDate: string) {
   return addDays(parseISO(fromDate), 21).toISOString().split('T')[0]
 }
 
+// Prazo para cobrar o fechamento de uma venda com crédito já aprovado.
+// Lead mais quente que existe — não pode esfriar.
+export function saleFollowupDate(fromDate: string, days = 5) {
+  return addDays(parseISO(fromDate), days).toISOString().split('T')[0]
+}
+
+export function formatPhone(phone: string | null | undefined) {
+  if (!phone) return '—'
+  return formatWhatsApp(phone)
+}
+
+// Link wa.me com DDI 55 implícito para números nacionais
+export function whatsappHref(phone: string, message?: string) {
+  const clean = phone.replace(/\D/g, '')
+  const withCountry = clean.startsWith('55') && clean.length > 11 ? clean : `55${clean}`
+  const q = message ? `?text=${encodeURIComponent(message)}` : ''
+  return `https://wa.me/${withCountry}${q}`
+}
+
+export function reminderTypeLabel(type: string) {
+  const map: Record<string, string> = {
+    reconsultation: 'Reconsulta',
+    sale_followup: 'Cobrar fechamento',
+  }
+  return map[type] ?? 'Lembrete'
+}
+
 export function creditResultLabel(result: string) {
   const map: Record<string, string> = {
     approved: 'Aprovado',

@@ -153,8 +153,48 @@ export default function AtendimentosPage() {
           </div>
         </Card>
 
-        {/* Tabela */}
-        <Card>
+        {/* Cards (mobile) */}
+        <div className="md:hidden space-y-3">
+          {loading ? (
+            <div className="py-12 text-center text-slate-400">Carregando...</div>
+          ) : services.length === 0 ? (
+            <div className="py-12 text-center text-slate-400">Nenhum atendimento encontrado</div>
+          ) : (
+            services.map((s) => (
+              <Link key={s.id} href={`/atendimentos/${s.id}`}>
+                <Card className="p-4 active:bg-slate-50 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <div className="h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-bold text-indigo-600">{s.name.charAt(0)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-slate-900 truncate">{s.name}</p>
+                        {s.status && <Badge variant={statusVariant(s.status)}>{s.status.description}</Badge>}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5 font-mono">{maskCPF(s.cpf)}</p>
+                      <div className="flex items-center gap-2 flex-wrap mt-1.5 text-xs text-slate-600">
+                        <span>{s.seller?.name ?? '—'}</span>
+                        {s.motorcycle_type?.model && <><span className="text-slate-300">·</span><span>{s.motorcycle_type.model}</span></>}
+                        <span className="text-slate-300">·</span>
+                        <span>{formatDate(s.entry_date)}</span>
+                      </div>
+                      {s.next_consultation_date && (
+                        <p className="flex items-center gap-1 text-amber-600 text-xs font-medium mt-1.5">
+                          <Bell className="h-3 w-3" />
+                          Próx. consulta: {formatDate(s.next_consultation_date)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))
+          )}
+        </div>
+
+        {/* Tabela (desktop) */}
+        <Card className="hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

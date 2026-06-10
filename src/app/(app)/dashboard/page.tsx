@@ -7,7 +7,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import {
   Users, UserCheck, FileSearch, CheckCircle,
   XCircle, ShoppingBag, TrendingDown, Bell,
-  Percent, AlertTriangle,
+  Percent, AlertTriangle, Clock, ArrowRight,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,7 @@ interface Stats {
   total_closed: number
   total_lost: number
   total_pending_reminders: number
+  total_awaiting_sale: number
 }
 
 interface RecentService {
@@ -84,7 +85,7 @@ export default function DashboardPage() {
 
       const allServices = await supabase
         .from('customer_services')
-        .select('status_id, seller_id, reminder_active, statuses:status_id(is_closed,is_lost,generates_reminder)')
+        .select('status_id, seller_id, reminder_active, statuses:status_id(is_closed,is_lost,generates_reminder,description)')
 
       if (allServices.data) {
         const data = allServices.data as any[]
@@ -93,6 +94,7 @@ export default function DashboardPage() {
         const total_closed = data.filter((d) => d.statuses?.is_closed).length
         const total_lost = data.filter((d) => d.statuses?.is_lost).length
         const total_pending_reminders = data.filter((d) => d.reminder_active).length
+        const total_awaiting_sale = data.filter((d) => d.statuses?.description === 'Consulta aprovada').length
 
         const ccRes = await supabase.from('credit_checks').select('id, result')
         const total_consultations = ccRes.data?.length ?? 0
@@ -108,6 +110,7 @@ export default function DashboardPage() {
           total_closed,
           total_lost,
           total_pending_reminders,
+          total_awaiting_sale,
         })
       }
 
@@ -123,12 +126,31 @@ export default function DashboardPage() {
       <Header title="Dashboard" subtitle="Visão geral do dia" />
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
+        {/* Destaque: leads mais quentes — crédito aprovado aguardando fechamento */}
+        {!!stats?.total_awaiting_sale && (
+          <Link href="/atendimentos" className="block">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3 hover:bg-emerald-100/70 transition-colors">
+              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                <Clock className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-emerald-900">
+                  {stats.total_awaiting_sale} {stats.total_awaiting_sale === 1 ? 'venda aprovada aguardando' : 'vendas aprovadas aguardando'} fechamento
+                </p>
+                <p className="text-xs text-emerald-700">Crédito já aprovado — o lead mais fácil de fechar. Cobre o vendedor.</p>
+              </div>
+              <ArrowRight className="h-5 w-5 text-emerald-500 shrink-0" />
+            </div>
+          </Link>
+        )}
+
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Entradas na loja" value={stats?.total_entries ?? '—'} icon={Users} iconColor="text-slate-600" iconBg="bg-slate-100" />
           <StatCard title="Atendidos" value={stats?.total_attended ?? '—'} icon={UserCheck} iconColor="text-indigo-600" iconBg="bg-indigo-50" />
           <StatCard title="Consultas realizadas" value={stats?.total_consultations ?? '—'} icon={FileSearch} iconColor="text-blue-600" iconBg="bg-blue-50" />
           <StatCard title="Aprovados" value={stats?.total_approved ?? '—'} icon={CheckCircle} iconColor="text-emerald-600" iconBg="bg-emerald-50" />
+          <StatCard title="Aguardando fechamento" value={stats?.total_awaiting_sale ?? '—'} icon={Clock} iconColor="text-emerald-600" iconBg="bg-emerald-50" />
           <StatCard title="Com restrição/negado" value={stats?.total_restriction ?? '—'} icon={AlertTriangle} iconColor="text-amber-600" iconBg="bg-amber-50" />
           <StatCard title="Vendas fechadas" value={stats?.total_closed ?? '—'} icon={ShoppingBag} iconColor="text-emerald-600" iconBg="bg-emerald-50" />
           <StatCard title="Vendas perdidas" value={stats?.total_lost ?? '—'} icon={TrendingDown} iconColor="text-red-600" iconBg="bg-red-50" />
