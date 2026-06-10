@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Sidebar } from '@/components/layout/sidebar'
+import { createClient } from '@/lib/supabase/client'
 import { Menu, Bell } from 'lucide-react'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Semeia os dados-padrão da conta caso ainda não existam (idempotente).
+  // Rede de segurança para sessões já autenticadas que não passaram pelo login agora.
+  useEffect(() => {
+    createClient().rpc('bootstrap_user').then(() => {}, () => {})
+  }, [])
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" suppressHydrationWarning>
