@@ -201,13 +201,16 @@ export default function NovoAtendimentoPage() {
       })
 
       if (form.sale_outcome === 'pending') {
-        await supabase.from('reminders').insert({
-          customer_service_id: service.id,
-          seller_id: form.seller_id || null,
-          due_date: saleFollowupDate(form.approval_date),
-          type: 'sale_followup',
-          status: 'pending',
-        })
+        const followupDate = saleFollowupDate(form.approval_date)
+        if (followupDate) {
+          await supabase.from('reminders').insert({
+            customer_service_id: service.id,
+            seller_id: form.seller_id || null,
+            due_date: followupDate,
+            type: 'sale_followup',
+            status: 'pending',
+          })
+        }
       }
     }
 
@@ -280,9 +283,16 @@ export default function NovoAtendimentoPage() {
                   value={form.phone}
                   onChange={(e) => {
                     const v = e.target.value.replace(/\D/g, '').slice(0, 11)
-                    const masked = v.length > 10
-                      ? v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
-                      : v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+                    let masked = v
+                    if (v.length > 10) {
+                      masked = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+                    } else if (v.length > 6) {
+                      masked = v.replace(/(\d{2})(\d{4})(\d{1,4})/, '($1) $2-$3')
+                    } else if (v.length > 2) {
+                      masked = v.replace(/(\d{2})(\d{1,4})/, '($1) $2')
+                    } else if (v.length > 0) {
+                      masked = `(${v}`
+                    }
                     set('phone', masked)
                   }}
                   placeholder="(00) 00000-0000"
@@ -379,8 +389,10 @@ export default function NovoAtendimentoPage() {
                     <Bell className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-700">
                       Vai entrar como <strong>aprovado aguardando fechamento</strong> — o lead mais quente.
-                      Um lembrete de cobrança será criado para{' '}
-                      <strong>{new Date(saleFollowupDate(form.approval_date) + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>.
+                      {saleFollowupDate(form.approval_date) && (
+                        <> Um lembrete de cobrança será criado para{' '}
+                        <strong>{new Date(saleFollowupDate(form.approval_date)! + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>.</>
+                      )}
                     </p>
                   </div>
                 )}
@@ -441,12 +453,12 @@ export default function NovoAtendimentoPage() {
                   onChange={(e) => set('check_notes', e.target.value)}
                   placeholder="Detalhes da consulta..."
                 />
-                {GENERATES_REMINDER.includes(selectedStatus?.description ?? '') && form.check_date && (
+                {GENERATES_REMINDER.includes(selectedStatus?.description ?? '') && form.check_date && nextConsultationDate(form.check_date) && (
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
                     <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
                     <p className="text-sm text-amber-700">
                       Lembrete de reconsulta será criado automaticamente para{' '}
-                      <strong>{new Date(nextConsultationDate(form.check_date) + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>
+                      <strong>{new Date(nextConsultationDate(form.check_date)! + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>
                     </p>
                   </div>
                 )}

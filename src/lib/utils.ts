@@ -39,14 +39,29 @@ export function formatWhatsApp(number: string) {
   return number
 }
 
-export function nextConsultationDate(fromDate: string) {
-  return addDays(parseISO(fromDate), 21).toISOString().split('T')[0]
+export function nextConsultationDate(fromDate: string): string | null {
+  if (!fromDate) return null
+  try {
+    const d = parseISO(fromDate)
+    if (isNaN(d.getTime())) return null
+    return addDays(d, 21).toISOString().split('T')[0]
+  } catch {
+    return null
+  }
 }
 
 // Prazo para cobrar o fechamento de uma venda com crédito já aprovado.
 // Lead mais quente que existe — não pode esfriar.
-export function saleFollowupDate(fromDate: string, days = 5) {
-  return addDays(parseISO(fromDate), days).toISOString().split('T')[0]
+// Retorna null se fromDate for inválido (evita crash no render de preview).
+export function saleFollowupDate(fromDate: string, days = 5): string | null {
+  if (!fromDate) return null
+  try {
+    const d = parseISO(fromDate)
+    if (isNaN(d.getTime())) return null
+    return addDays(d, days).toISOString().split('T')[0]
+  } catch {
+    return null
+  }
 }
 
 export function formatPhone(phone: string | null | undefined) {

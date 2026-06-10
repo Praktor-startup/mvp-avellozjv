@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { formatCPF } from '@/lib/utils'
+import { formatCPF, formatPhone } from '@/lib/utils'
 import { ArrowLeft, AlertTriangle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import type { Seller, Status, MotorcycleType, LossReason } from '@/types'
@@ -51,10 +51,13 @@ export default function EditarAtendimentoPage() {
         } catch {
           entryDate = d.entry_date?.slice(0, 16) ?? ''
         }
+        // Aplica máscara no telefone ao carregar (banco guarda dígitos puros)
+        const rawPhone = d.phone ?? ''
+        const maskedPhone = rawPhone ? formatPhone(rawPhone) : ''
         setForm({
           name: d.name ?? '',
           cpf: d.cpf ?? '',
-          phone: d.phone ?? '',
+          phone: maskedPhone,
           entry_date: entryDate,
           seller_id: d.seller_id ?? '',
           motorcycle_type_id: d.motorcycle_type_id ?? '',
@@ -160,9 +163,16 @@ export default function EditarAtendimentoPage() {
                   value={form.phone}
                   onChange={(e) => {
                     const v = e.target.value.replace(/\D/g, '').slice(0, 11)
-                    const masked = v.length > 10
-                      ? v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
-                      : v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+                    let masked = v
+                    if (v.length > 10) {
+                      masked = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+                    } else if (v.length > 6) {
+                      masked = v.replace(/(\d{2})(\d{4})(\d{1,4})/, '($1) $2-$3')
+                    } else if (v.length > 2) {
+                      masked = v.replace(/(\d{2})(\d{1,4})/, '($1) $2')
+                    } else if (v.length > 0) {
+                      masked = `(${v}`
+                    }
                     set('phone', masked)
                   }}
                   placeholder="(00) 00000-0000"

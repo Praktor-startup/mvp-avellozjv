@@ -22,6 +22,8 @@ import {
 import Link from 'next/link'
 import type { CustomerService, CreditCheck, Status, LossReason } from '@/types'
 
+const SERVICE_SELECT = `*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`
+
 export default function AtendimentoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -41,23 +43,21 @@ export default function AtendimentoDetailPage() {
   const [checkErrors, setCheckErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const SELECT = `*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`
-
   const reload = useCallback(async () => {
     const supabase = createClient()
     const [svc, chk] = await Promise.all([
-      supabase.from('customer_services').select(SELECT).eq('id', id).single(),
+      supabase.from('customer_services').select(SERVICE_SELECT).eq('id', id).single(),
       supabase.from('credit_checks').select('*').eq('customer_service_id', id).order('check_date', { ascending: false }),
     ])
     if (svc.data) setService(svc.data as CustomerService)
     if (chk.data) setChecks(chk.data as CreditCheck[])
-  }, [id, SELECT])
+  }, [id])
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
       const [svc, chk, st, lr] = await Promise.all([
-        supabase.from('customer_services').select(SELECT).eq('id', id).single(),
+        supabase.from('customer_services').select(SERVICE_SELECT).eq('id', id).single(),
         supabase.from('credit_checks').select('*').eq('customer_service_id', id).order('check_date', { ascending: false }),
         supabase.from('statuses').select('*').eq('active', true).order('sort_order'),
         supabase.from('loss_reasons').select('*').eq('active', true).order('description'),
@@ -69,7 +69,7 @@ export default function AtendimentoDetailPage() {
       setLoading(false)
     }
     load()
-  }, [id, SELECT])
+  }, [id])
 
   // Encerra lembretes de cobrança de fechamento ainda pendentes deste atendimento
   async function completeSaleFollowups() {
@@ -149,8 +149,8 @@ export default function AtendimentoDetailPage() {
         }).eq('id', id),
         supabase.from('reminders').insert({
           customer_service_id: id,
-          credit_check_id: newCheck?.id,
-          seller_id: service?.seller_id,
+          credit_check_id: newCheck?.id ?? null,
+          seller_id: service?.seller_id ?? null,
           due_date: nextDate,
           type: 'reconsultation',
           status: 'pending',
@@ -172,14 +172,17 @@ export default function AtendimentoDetailPage() {
         // aguardando fechamento — vira "Consulta aprovada" + lembrete de cobrança
         const approved = statuses.find((s) => s.description === 'Consulta aprovada')
         if (approved) await supabase.from('customer_services').update({ status_id: approved.id }).eq('id', id)
-        await supabase.from('reminders').insert({
-          customer_service_id: id,
-          credit_check_id: newCheck?.id,
-          seller_id: service?.seller_id,
-          due_date: saleFollowupDate(checkForm.check_date),
-          type: 'sale_followup',
-          status: 'pending',
-        })
+        const followupDate = saleFollowupDate(checkForm.check_date)
+        if (followupDate) {
+          await supabase.from('reminders').insert({
+            customer_service_id: id,
+            credit_check_id: newCheck?.id ?? null,
+            seller_id: service?.seller_id ?? null,
+            due_date: followupDate,
+            type: 'sale_followup',
+            status: 'pending',
+          })
+        }
       }
     }
 
@@ -482,10 +485,10 @@ export default function AtendimentoDetailPage() {
                   { value: 'lost', label: 'Não fechou' },
                 ]}
               />
-              {checkForm.sale_outcome === 'pending' && checkForm.check_date && (
+              {checkForm.sale_outcome === 'pending' && checkForm.check_date && saleFollowupDate(checkForm.check_date) && (
                 <p className="text-xs text-emerald-700">
                   Lembrete de cobrança será criado para{' '}
-                  <strong>{new Date(saleFollowupDate(checkForm.check_date) + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>.
+                  <strong>{new Date(saleFollowupDate(checkForm.check_date)! + 'T12:00:00').toLocaleDateString('pt-BR')}</strong>.
                 </p>
               )}
               {checkForm.sale_outcome === 'lost' && (
@@ -526,11 +529,11 @@ export default function AtendimentoDetailPage() {
               />
             </label>
           </div>
-          {['restriction', 'denied'].includes(checkForm.result) && checkForm.check_date && (
+          {['restriction', 'denied'].includes(checkForm.result) && checkForm.check_date && nextConsultationDate(checkForm.check_date) && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
               <Bell className="h-4 w-4 text-amber-600 shrink-0" />
               <p className="text-xs text-amber-700">
-                Lembrete de reconsulta para <strong>{new Date(nextConsultationDate(checkForm.check_date) + 'T12:00:00').toLocaleDateString('pt-BR')}</strong> será criado automaticamente.
+                Lembrete de reconsulta para <strong>{new Date(nextConsultationDate(checkForm.check_date)! + 'T12:00:00').toLocaleDateString('pt-BR')}</strong> será criado automaticamente.
               </p>
             </div>
           )}
