@@ -1,0 +1,1 @@
+[   13866ms] [ERROR] Failed to load resource: the server responded with a status of 401 () @ https://api.praktor.com.br/rest/v1/customer_services?select=id,name,entry_date,status:status_id(description)&order=entry_date.desc:0

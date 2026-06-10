@@ -16,16 +16,17 @@ import {
   BarChart2,
   LogOut,
   X,
+  HelpCircle,
 } from 'lucide-react'
 
 const nav = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Atendimentos', href: '/atendimentos', icon: ClipboardList },
-  { label: 'Lembretes', href: '/lembretes', icon: Bell, badge: true },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
+  { label: 'Atendimentos', href: '/atendimentos', icon: ClipboardList, tour: 'nav-atendimentos' },
+  { label: 'Lembretes', href: '/lembretes', icon: Bell, badge: true, tour: 'nav-lembretes' },
   { divider: true },
   { label: 'Relatórios', href: '/relatorios', icon: BarChart2 },
   { divider: true },
-  { label: 'Vendedores', href: '/vendedores', icon: Users },
+  { label: 'Vendedores', href: '/vendedores', icon: Users, tour: 'nav-vendedores' },
   { label: 'Tipos de Moto', href: '/motos', icon: Bike },
   { label: 'Status', href: '/status', icon: Tag },
   { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle },
@@ -94,6 +95,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              data-tour={(item as { tour?: string }).tour}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
                 isActive
@@ -114,7 +116,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-slate-100">
+      <div className="px-4 py-3 border-t border-slate-100 space-y-0.5">
+        <button
+          onClick={() => window.dispatchEvent(new Event('avelloz:start-tour'))}
+          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
+        >
+          <HelpCircle className="h-4 w-4 shrink-0" />
+          Tutorial
+        </button>
         <button
           onClick={handleLogout}
           className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"

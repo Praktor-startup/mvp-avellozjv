@@ -86,6 +86,14 @@ export default function AtendimentoDetailPage() {
       .eq('customer_service_id', id).eq('type', 'reconsultation').eq('status', 'pending')
   }
 
+  // Conclui lembretes de "cobrar resultado" de consulta pendente — quando o
+  // resultado definitivo chega, não precisa mais cobrar.
+  async function completePendingChecks() {
+    const supabase = createClient()
+    await supabase.from('reminders').update({ status: 'completed' })
+      .eq('customer_service_id', id).eq('type', 'pending_check').eq('status', 'pending')
+  }
+
   async function applyOutcome(kind: 'closed' | 'lost', lossReasonId?: string) {
     setSavingOutcome(kind)
     const supabase = createClient()
@@ -100,7 +108,7 @@ export default function AtendimentoDetailPage() {
       reminder_active: false,
       next_consultation_date: null,
     }).eq('id', id)
-    await Promise.all([completeSaleFollowups(), completeReconsultations()])
+    await Promise.all([completeSaleFollowups(), completeReconsultations(), completePendingChecks()])
     await reload()
     setShowLost(false)
     setLostReasonId('')
@@ -152,10 +160,10 @@ export default function AtendimentoDetailPage() {
       .select()
       .single()
 
-    // Registrar uma consulta definitiva (aprovado/restrição/negado) cumpre a
-    // reconsulta pendente — o cliente deve sair do dashboard de reconsultas.
+    // Registrar uma consulta definitiva (aprovado/restrição/negado) cumpre os
+    // lembretes pendentes — o cliente sai do dashboard de reconsultas/cobranças.
     const definitive = ['approved', 'restriction', 'denied'].includes(checkForm.result)
-    if (definitive) await completeReconsultations()
+    if (definitive) await Promise.all([completeReconsultations(), completePendingChecks()])
 
     if (nextDate) {
       // nova restrição/negação → reabre o ciclo com uma nova reconsulta
@@ -179,6 +187,19 @@ export default function AtendimentoDetailPage() {
         reminder_active: false,
         next_consultation_date: null,
       }).eq('id', id)
+    } else if (checkForm.result === 'pending') {
+      // consulta no banco aguardando resultado → cobra o retorno em 2 dias
+      const dueDate = saleFollowupDate(checkForm.check_date, 2)
+      if (dueDate) {
+        await supabase.from('reminders').insert({
+          customer_service_id: id,
+          credit_check_id: newCheck?.id ?? null,
+          seller_id: service?.seller_id ?? null,
+          due_date: dueDate,
+          type: 'pending_check',
+          status: 'pending',
+        })
+      }
     }
 
     // Consulta aprovada: define o estado da venda já aqui no detalhe

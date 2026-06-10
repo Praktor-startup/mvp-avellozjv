@@ -1,0 +1,24 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e85]
+  - generic [ref=e218]:
+    - generic [ref=e219]:
+      - img [ref=e221]
+      - generic [ref=e226]:
+        - paragraph [ref=e227]: Avelloz
+        - paragraph [ref=e228]: Gestão comercial
+    - generic [ref=e229]:
+      - button "Entrar" [ref=e230]
+      - button "Criar conta" [ref=e231]
+    - generic [ref=e232]:
+      - generic [ref=e233]:
+        - generic [ref=e234]: E-mail*
+        - textbox "E-mail*" [ref=e235]:
+          - /placeholder: seu@email.com
+      - generic [ref=e236]:
+        - generic [ref=e237]: Senha*
+        - textbox "Senha*" [ref=e238]:
+          - /placeholder: Sua senha
+      - button "Entrar" [ref=e239]
+    - generic [ref=e240]:
+      - paragraph [ref=e241]: Acesso rápido para demonstração
+      - button "Entrar como Demo" [ref=e242]

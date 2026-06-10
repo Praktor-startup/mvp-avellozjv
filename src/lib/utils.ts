@@ -81,6 +81,7 @@ export function reminderTypeLabel(type: string) {
   const map: Record<string, string> = {
     reconsultation: 'Reconsulta',
     sale_followup: 'Cobrar fechamento',
+    pending_check: 'Cobrar resultado',
   }
   return map[type] ?? 'Lembrete'
 }

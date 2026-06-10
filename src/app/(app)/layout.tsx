@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Sidebar } from '@/components/layout/sidebar'
+import { Tour } from '@/components/onboarding/tour'
 import { createClient } from '@/lib/supabase/client'
 import { Menu, Bell } from 'lucide-react'
 
@@ -17,6 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" suppressHydrationWarning>
+      <Tour />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">

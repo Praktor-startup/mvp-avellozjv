@@ -1,0 +1,88 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: Avelloz
+          - paragraph [ref=e15]: Gestão comercial
+      - navigation [ref=e16]:
+        - link "Dashboard" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e18]
+          - generic [ref=e23]: Dashboard
+        - link "Atendimentos" [ref=e24] [cursor=pointer]:
+          - /url: /atendimentos
+          - img [ref=e25]
+          - generic [ref=e28]: Atendimentos
+        - link "Lembretes" [ref=e29] [cursor=pointer]:
+          - /url: /lembretes
+          - img [ref=e30]
+          - generic [ref=e33]: Lembretes
+        - link "Relatórios" [ref=e35] [cursor=pointer]:
+          - /url: /relatorios
+          - img [ref=e36]
+          - generic [ref=e37]: Relatórios
+        - link "Vendedores" [ref=e39] [cursor=pointer]:
+          - /url: /vendedores
+          - img [ref=e40]
+          - generic [ref=e45]: Vendedores
+        - link "Tipos de Moto" [ref=e46] [cursor=pointer]:
+          - /url: /motos
+          - img [ref=e47]
+          - generic [ref=e52]: Tipos de Moto
+        - link "Status" [ref=e53] [cursor=pointer]:
+          - /url: /status
+          - img [ref=e54]
+          - generic [ref=e57]: Status
+        - link "Motivos de Perda" [ref=e58] [cursor=pointer]:
+          - /url: /motivos-perda
+          - img [ref=e59]
+          - generic [ref=e61]: Motivos de Perda
+      - button "Sair" [ref=e63]:
+        - img [ref=e64]
+        - text: Sair
+    - main [ref=e68]:
+      - generic [ref=e69]:
+        - generic [ref=e71]:
+          - paragraph [ref=e72]: quarta-feira, 10 de junho
+          - heading "Dashboard" [level=1] [ref=e73]
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - img [ref=e76]
+              - paragraph [ref=e79]: —
+              - paragraph [ref=e80]: Vendas fechadas
+            - generic [ref=e81]:
+              - img [ref=e82]
+              - paragraph [ref=e85]: —
+              - paragraph [ref=e86]: Aprovações
+            - generic [ref=e87]:
+              - img [ref=e88]
+              - paragraph [ref=e91]: —
+              - paragraph [ref=e92]: Reconsultas pendentes
+            - generic [ref=e93]:
+              - img [ref=e94]
+              - paragraph [ref=e99]: —
+              - paragraph [ref=e100]: Entradas na loja
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - img [ref=e107]
+                - heading "Reconsultas pendentes" [level=2] [ref=e111]
+              - link "Ver todos" [ref=e112] [cursor=pointer]:
+                - /url: /lembretes
+                - text: Ver todos
+                - img [ref=e113]
+            - generic [ref=e115]: Carregando...
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - img [ref=e120]
+                - heading "Últimos atendimentos" [level=2] [ref=e125]
+              - link "Ver todos" [ref=e126] [cursor=pointer]:
+                - /url: /atendimentos
+                - text: Ver todos
+                - img [ref=e127]
+            - generic [ref=e129]: Carregando...
+  - alert [ref=e130]

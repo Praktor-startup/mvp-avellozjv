@@ -1,0 +1,76 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: Avelloz
+          - paragraph [ref=e15]: Gestão comercial
+      - navigation [ref=e16]:
+        - link "Dashboard" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e18]
+          - generic [ref=e23]: Dashboard
+        - link "Atendimentos" [ref=e24] [cursor=pointer]:
+          - /url: /atendimentos
+          - img [ref=e25]
+          - generic [ref=e28]: Atendimentos
+        - link "Lembretes" [ref=e29] [cursor=pointer]:
+          - /url: /lembretes
+          - img [ref=e30]
+          - generic [ref=e33]: Lembretes
+        - link "Relatórios" [ref=e35] [cursor=pointer]:
+          - /url: /relatorios
+          - img [ref=e36]
+          - generic [ref=e37]: Relatórios
+        - link "Vendedores" [ref=e39] [cursor=pointer]:
+          - /url: /vendedores
+          - img [ref=e40]
+          - generic [ref=e45]: Vendedores
+        - link "Tipos de Moto" [ref=e46] [cursor=pointer]:
+          - /url: /motos
+          - img [ref=e47]
+          - generic [ref=e52]: Tipos de Moto
+        - link "Status" [ref=e53] [cursor=pointer]:
+          - /url: /status
+          - img [ref=e54]
+          - generic [ref=e57]: Status
+        - link "Motivos de Perda" [ref=e58] [cursor=pointer]:
+          - /url: /motivos-perda
+          - img [ref=e59]
+          - generic [ref=e61]: Motivos de Perda
+      - button "Sair" [ref=e63]:
+        - img [ref=e64]
+        - text: Sair
+    - main [ref=e68]:
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - heading "Vendedores" [level=1] [ref=e72]
+            - paragraph [ref=e73]: 0 ativos
+          - generic [ref=e74]:
+            - button "Novo vendedor" [active] [ref=e75]:
+              - img [ref=e76]
+              - text: Novo vendedor
+            - link [ref=e77] [cursor=pointer]:
+              - /url: /lembretes
+              - img [ref=e78]
+        - paragraph [ref=e83]: Nenhum vendedor cadastrado
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - heading "Novo vendedor" [level=2] [ref=e90]
+            - button [ref=e91]:
+              - img [ref=e92]
+          - generic [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e98]: Nome*
+              - textbox "Nome*" [ref=e99]:
+                - /placeholder: Nome completo
+            - generic [ref=e100]:
+              - generic [ref=e101]: WhatsApp*
+              - textbox "WhatsApp*" [ref=e102]:
+                - /placeholder: (11) 99999-9999
+            - generic [ref=e103]:
+              - button "Cancelar" [ref=e104]
+              - button "Salvar" [ref=e105]
+  - alert [ref=e84]
