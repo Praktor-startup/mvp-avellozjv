@@ -70,6 +70,9 @@ export default function OrigensPage() {
     if (!form.name.trim()) { setErrors({ name: 'Nome obrigatório' }); return }
     setSaving(true)
     const supabase = createClient()
+    // Garante que a conta esteja vinculada a uma loja antes de inserir
+    // (org_id é preenchido pelo default current_org(); sem org a RLS rejeita).
+    try { await supabase.rpc('ensure_org') } catch {}
     // code único: slug do nome + sufixo curto aleatório
     const base = slugify(form.name) || 'origem'
     const code = `${base}-${Math.random().toString(36).slice(2, 6)}`
@@ -80,7 +83,15 @@ export default function OrigensPage() {
       description: form.description.trim() || null,
     })
     setSaving(false)
-    if (error) { setErrors({ name: 'Erro ao salvar. Tente outro nome.' }); return }
+    if (error) {
+      // nunca expõe a mensagem crua do banco; loga p/ debug e mostra texto claro
+      console.error('Erro ao criar origem:', error)
+      const msg = /row-level security|org/i.test(error.message || '')
+        ? 'Sua conta ainda está sendo preparada. Recarregue a página e tente de novo.'
+        : 'Não foi possível salvar. Tente outro nome.'
+      setErrors({ name: msg })
+      return
+    }
     await load()
     setShowModal(false)
   }

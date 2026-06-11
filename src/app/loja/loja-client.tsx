@@ -173,28 +173,19 @@ export default function LojaClient() {
           <div className="grid md:grid-cols-3 gap-6">
             {MODELOS.map((m) => (
               <div key={m.nome} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col">
-                <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
+                {/* Criativo completo da moto — sem corte (object-contain) */}
+                <div className="bg-white p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={m.img} alt={`Avelloz ${m.nome}`} className="w-full h-full object-cover" />
+                  <img src={m.img} alt={`Avelloz ${m.nome} — ${m.tag}`} className="w-full h-auto rounded-2xl" />
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="text-2xl font-black" style={{ color: BLUE }}>{m.nome}</h3>
-                  </div>
-                  <p className="text-sm font-medium" style={{ color: ORANGE }}>{m.tag}</p>
-                  <ul className="mt-4 space-y-2 flex-1">
-                    {m.specs.map((s) => (
-                      <li key={s} className="flex items-start gap-2 text-sm text-slate-600">
-                        <Check className="h-4 w-4 shrink-0 mt-0.5" style={{ color: ORANGE }} />{s}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="px-6 pb-6 pt-2 flex flex-col flex-1">
+                  <p className="text-sm font-medium text-center mb-3" style={{ color: ORANGE }}>{m.tag}</p>
                   <button
                     onClick={() => { setForm((f) => ({ ...f, interest: m.nome })); scrollToForm() }}
-                    className="mt-5 w-full inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-3 rounded-full transition-transform hover:scale-[1.02]"
+                    className="mt-auto w-full inline-flex items-center justify-center gap-2 font-bold text-white px-4 py-3 rounded-full transition-transform hover:scale-[1.02]"
                     style={{ backgroundColor: BLUE }}
                   >
-                    Tenho interesse <ChevronRight className="h-4 w-4" />
+                    Tenho interesse na {m.nome} <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
               </div>

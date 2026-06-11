@@ -1,0 +1,155 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: Avelloz
+          - paragraph [ref=e15]: Gestão comercial
+      - navigation [ref=e16]:
+        - link "Dashboard" [ref=e17] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e18]
+          - generic [ref=e23]: Dashboard
+        - link "Atendimentos" [ref=e24] [cursor=pointer]:
+          - /url: /atendimentos
+          - img [ref=e25]
+          - generic [ref=e28]: Atendimentos
+        - link "Lembretes 1" [ref=e102] [cursor=pointer]:
+          - /url: /lembretes
+          - img [ref=e30]
+          - generic [ref=e33]: Lembretes
+          - generic [ref=e103]: "1"
+        - link "Leads" [ref=e35] [cursor=pointer]:
+          - /url: /leads
+          - img [ref=e36]
+          - generic [ref=e39]: Leads
+        - link "Captação (QR)" [ref=e40] [cursor=pointer]:
+          - /url: /origens
+          - img [ref=e41]
+          - generic [ref=e47]: Captação (QR)
+        - link "Relatórios" [ref=e49] [cursor=pointer]:
+          - /url: /relatorios
+          - img [ref=e50]
+          - generic [ref=e51]: Relatórios
+        - link "Vendedores" [ref=e53] [cursor=pointer]:
+          - /url: /vendedores
+          - img [ref=e54]
+          - generic [ref=e59]: Vendedores
+        - link "Tipos de Moto" [ref=e60] [cursor=pointer]:
+          - /url: /motos
+          - img [ref=e61]
+          - generic [ref=e66]: Tipos de Moto
+        - link "Status" [ref=e67] [cursor=pointer]:
+          - /url: /status
+          - img [ref=e68]
+          - generic [ref=e71]: Status
+        - link "Motivos de Perda" [ref=e72] [cursor=pointer]:
+          - /url: /motivos-perda
+          - img [ref=e73]
+          - generic [ref=e75]: Motivos de Perda
+      - generic [ref=e76]:
+        - button "Tutorial" [ref=e77]:
+          - img [ref=e78]
+          - text: Tutorial
+        - button "Sair" [ref=e81]:
+          - img [ref=e82]
+          - text: Sair
+    - main [ref=e86]:
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - heading "Captação por QR Code" [level=1] [ref=e90]
+            - paragraph [ref=e91]: Crie um QR para cada ponto e descubra de onde vêm seus clientes
+          - generic [ref=e92]:
+            - button "Nova origem" [active] [ref=e93]:
+              - img [ref=e94]
+              - text: Nova origem
+            - link [ref=e95] [cursor=pointer]:
+              - /url: /lembretes
+              - img [ref=e96]
+        - generic [ref=e104]:
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - img [ref=e109]
+              - generic [ref=e116]: Ativa
+            - heading "restaurante do club" [level=3] [ref=e117]
+            - paragraph [ref=e118]: restaurante-do-club-1lng
+            - generic [ref=e119]:
+              - generic [ref=e120]:
+                - img [ref=e122]
+                - paragraph [ref=e127]: "0"
+                - paragraph [ref=e128]: scans
+              - generic [ref=e129]:
+                - img [ref=e131]
+                - paragraph [ref=e136]: "0"
+                - paragraph [ref=e137]: leads
+            - generic [ref=e138]:
+              - button "Ver QR" [ref=e139]:
+                - img [ref=e140]
+                - text: Ver QR
+              - button [ref=e146]:
+                - img [ref=e147]
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - img [ref=e153]
+              - generic [ref=e159]:
+                - generic [ref=e160]: Site
+                - generic [ref=e161]: Ativa
+            - heading "Site (acesso direto)" [level=3] [ref=e162]
+            - paragraph [ref=e163]: site
+            - paragraph [ref=e164]: Leads que chegaram direto pela landing, sem QR
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - img [ref=e168]
+                - paragraph [ref=e173]: "0"
+                - paragraph [ref=e174]: scans
+              - generic [ref=e175]:
+                - img [ref=e177]
+                - paragraph [ref=e182]: "0"
+                - paragraph [ref=e183]: leads
+            - button "Ver QR" [ref=e185]:
+              - img [ref=e186]
+              - text: Ver QR
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - img [ref=e196]
+              - generic [ref=e203]: Ativa
+            - heading "Restaurante (exemplo)" [level=3] [ref=e204]
+            - paragraph [ref=e205]: restaurante-exemplo
+            - paragraph [ref=e206]: QR de exemplo para parceiro restaurante
+            - generic [ref=e207]:
+              - generic [ref=e208]:
+                - img [ref=e210]
+                - paragraph [ref=e215]: "0"
+                - paragraph [ref=e216]: scans
+              - generic [ref=e217]:
+                - img [ref=e219]
+                - paragraph [ref=e224]: "0"
+                - paragraph [ref=e225]: leads
+            - generic [ref=e226]:
+              - button "Ver QR" [ref=e227]:
+                - img [ref=e228]
+                - text: Ver QR
+              - button [ref=e234]:
+                - img [ref=e235]
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - heading "Nova origem" [level=2] [ref=e242]
+              - paragraph [ref=e243]: Um ponto de divulgação (parceiro, evento, anúncio...)
+            - button [ref=e244]:
+              - img [ref=e245]
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - generic [ref=e251]: Nome da origem*
+              - textbox "Nome da origem*" [ref=e252]:
+                - /placeholder: "Ex: Restaurante do Zé"
+            - generic [ref=e253]:
+              - generic [ref=e254]: Descrição (opcional)
+              - textbox "Descrição (opcional)" [ref=e255]:
+                - /placeholder: Onde o QR vai ficar, observações...
+            - generic [ref=e256]:
+              - button "Cancelar" [ref=e257]
+              - button "Criar origem" [ref=e258]
+  - alert [ref=e101]
