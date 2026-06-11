@@ -44,3 +44,4 @@ next-env.d.ts
 # Artefatos de teste (Playwright/verificador)
 .playwright-mcp/
 /0*-*.png
+snap2.md
