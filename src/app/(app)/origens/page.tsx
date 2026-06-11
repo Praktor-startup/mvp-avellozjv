@@ -43,6 +43,7 @@ export default function OrigensPage() {
   const [qrSource, setQrSource] = useState<Source | null>(null)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [copied, setCopied] = useState(false)
+  const [copiedCard, setCopiedCard] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     const supabase = createClient()
@@ -70,9 +71,18 @@ export default function OrigensPage() {
     if (!form.name.trim()) { setErrors({ name: 'Nome obrigatório' }); return }
     setSaving(true)
     const supabase = createClient()
-    // Garante que a conta esteja vinculada a uma loja antes de inserir
-    // (org_id é preenchido pelo default current_org(); sem org a RLS rejeita).
+
+    // Causa nº1 de falha: sessão expirada numa aba aberta há horas. Valida o
+    // login contra o servidor antes de tentar gravar.
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      setSaving(false)
+      setErrors({ name: 'Sua sessão expirou. Clique em "Sair" e entre novamente para criar a origem.' })
+      return
+    }
+    // Garante o vínculo com a loja (org_id usa o default current_org()).
     try { await supabase.rpc('ensure_org') } catch {}
+
     // code único: slug do nome + sufixo curto aleatório
     const base = slugify(form.name) || 'origem'
     const code = `${base}-${Math.random().toString(36).slice(2, 6)}`
@@ -84,11 +94,13 @@ export default function OrigensPage() {
     })
     setSaving(false)
     if (error) {
-      // nunca expõe a mensagem crua do banco; loga p/ debug e mostra texto claro
       console.error('Erro ao criar origem:', error)
-      const msg = /row-level security|org/i.test(error.message || '')
-        ? 'Sua conta ainda está sendo preparada. Recarregue a página e tente de novo.'
-        : 'Não foi possível salvar. Tente outro nome.'
+      const m = `${error.message || ''} ${(error as { code?: string }).code || ''}`
+      let msg: string
+      if (/duplicate|unique|23505/i.test(m)) msg = 'Já existe uma origem com esse nome. Tente outro.'
+      else if (/jwt|expired|401|invalid token|not authenticated/i.test(m)) msg = 'Sua sessão expirou. Saia e entre novamente.'
+      else if (/row-level security|42501|\borg\b/i.test(m)) msg = 'Sua conta ainda está sendo preparada. Recarregue a página e tente de novo.'
+      else msg = `Não foi possível salvar: ${error.message || 'erro desconhecido'}`
       setErrors({ name: msg })
       return
     }
@@ -104,6 +116,12 @@ export default function OrigensPage() {
 
   const trackUrl = (code: string) =>
     typeof window !== 'undefined' ? `${window.location.origin}/r/${code}` : `/r/${code}`
+
+  async function copyCardLink(code: string) {
+    try { await navigator.clipboard.writeText(trackUrl(code)) } catch {}
+    setCopiedCard(code)
+    setTimeout(() => setCopiedCard((c) => (c === code ? null : c)), 1800)
+  }
 
   async function openQr(s: Source) {
     setQrSource(s)
@@ -178,6 +196,9 @@ export default function OrigensPage() {
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" size="sm" className="flex-1" onClick={() => openQr(s)}>
                       <QrCode className="h-3.5 w-3.5" />Ver QR
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => copyCardLink(s.code)}>
+                      {copiedCard === s.code ? <><Check className="h-3.5 w-3.5" />Copiado</> : <><Copy className="h-3.5 w-3.5" />Copiar link</>}
                     </Button>
                     {s.kind !== 'site' && (
                       <Button variant="ghost" size="sm" onClick={() => toggleActive(s)}>
