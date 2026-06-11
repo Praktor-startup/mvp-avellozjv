@@ -17,12 +17,17 @@ import {
   LogOut,
   X,
   HelpCircle,
+  QrCode,
+  Inbox,
 } from 'lucide-react'
 
 const nav = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
   { label: 'Atendimentos', href: '/atendimentos', icon: ClipboardList, tour: 'nav-atendimentos' },
   { label: 'Lembretes', href: '/lembretes', icon: Bell, badge: true, tour: 'nav-lembretes' },
+  { divider: true },
+  { label: 'Leads', href: '/leads', icon: Inbox, tour: 'nav-leads' },
+  { label: 'Captação (QR)', href: '/origens', icon: QrCode, tour: 'nav-origens' },
   { divider: true },
   { label: 'Relatórios', href: '/relatorios', icon: BarChart2 },
   { divider: true },

@@ -10,10 +10,11 @@ import { Menu, Bell, HelpCircle } from 'lucide-react'
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Semeia os dados-padrão da conta caso ainda não existam (idempotente).
+  // Garante que o usuário tenha uma organização (loja) com config semeada.
+  // Idempotente: se já é membro de uma loja, só retorna a org; senão cria.
   // Rede de segurança para sessões já autenticadas que não passaram pelo login agora.
   useEffect(() => {
-    createClient().rpc('bootstrap_user').then(() => {}, () => {})
+    createClient().rpc('ensure_org').then(() => {}, () => {})
   }, [])
 
   return (

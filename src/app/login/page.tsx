@@ -41,16 +41,17 @@ export default function LoginPage() {
     )
   }
 
-  // Garante que a conta tenha os dados-padrão (status, motivos, motos) antes de entrar.
-  // Cada conta é isolada: bootstrap só semeia se ainda não houver dados do usuário.
-  async function bootstrapUser() {
+  // Garante que o usuário pertença a uma organização (loja) com config semeada.
+  // Idempotente: se já é membro de uma loja, retorna a org existente; senão cria
+  // uma nova loja (o criador vira gestor). Cada loja é isolada das demais.
+  async function ensureOrg() {
     try {
       const sb = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         { db: { schema: 'avelloz' } },
       )
-      await sb.rpc('bootstrap_user')
+      await sb.rpc('ensure_org')
     } catch {}
   }
 
@@ -69,7 +70,7 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-    await bootstrapUser()
+    await ensureOrg()
     router.push('/dashboard')
     router.refresh()
   }
@@ -105,7 +106,7 @@ export default function LoginPage() {
     }
     // Se sessão foi criada imediatamente (confirmação desativada no Supabase)
     if (data.session) {
-      await bootstrapUser()
+      await ensureOrg()
       router.push('/dashboard')
       router.refresh()
       return

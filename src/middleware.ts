@@ -26,8 +26,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
-  const isPublicRoute = request.nextUrl.pathname === '/'
+  const path = request.nextUrl.pathname
+  const isAuthRoute = path.startsWith('/login')
+  // Rotas públicas: home, landing da loja e redirect de QR (visitante anônimo)
+  const isPublicRoute =
+    path === '/' || path === '/loja' || path.startsWith('/loja/') || path.startsWith('/r/')
 
   if (!user && !isAuthRoute && !isPublicRoute) {
     const loginUrl = request.nextUrl.clone()
