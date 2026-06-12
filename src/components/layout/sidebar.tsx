@@ -46,6 +46,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
+  const [orgName, setOrgName] = useState<string>('Gestão comercial')
 
   useEffect(() => {
     const supabase = createClient()
@@ -54,6 +55,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .then(({ count }) => setPendingCount(count ?? 0))
+    // Nome da loja atual — deixa claro em qual conta/org o usuário está logado
+    supabase
+      .from('organizations')
+      .select('name')
+      .limit(1)
+      .then(({ data }) => { if (data && data[0]) setOrgName(data[0].name as string) })
   }, [pathname])
 
   // Fecha o drawer ao navegar no mobile
@@ -74,9 +81,9 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
             <Bike className="h-4 w-4 text-white" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900 leading-none">Avelloz</p>
-            <p className="text-xs text-slate-500 mt-0.5">Gestão comercial</p>
+            <p className="text-xs text-slate-500 mt-0.5 truncate" title={orgName}>{orgName}</p>
           </div>
         </div>
         {/* Botão fechar só no mobile */}
