@@ -19,9 +19,14 @@ import {
   HelpCircle,
   QrCode,
   Inbox,
+  UserCog,
 } from 'lucide-react'
 
-const nav = [
+type NavItem =
+  | { divider: true }
+  | { label: string; href: string; icon: typeof LayoutDashboard; tour?: string; badge?: boolean; gestorOnly?: boolean }
+
+const nav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
   { label: 'Atendimentos', href: '/atendimentos', icon: ClipboardList, tour: 'nav-atendimentos' },
   { label: 'Lembretes', href: '/lembretes', icon: Bell, badge: true, tour: 'nav-lembretes' },
@@ -31,6 +36,7 @@ const nav = [
   { divider: true },
   { label: 'Relatórios', href: '/relatorios', icon: BarChart2 },
   { divider: true },
+  { label: 'Equipe', href: '/equipe', icon: UserCog, gestorOnly: true, tour: 'nav-equipe' },
   { label: 'Vendedores', href: '/vendedores', icon: Users, tour: 'nav-vendedores' },
   { label: 'Tipos de Moto', href: '/motos', icon: Bike },
   { label: 'Status', href: '/status', icon: Tag },
@@ -47,6 +53,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
   const [orgName, setOrgName] = useState<string>('Gestão comercial')
+  const [isGestor, setIsGestor] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -61,6 +68,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       .select('name')
       .limit(1)
       .then(({ data }) => { if (data && data[0]) setOrgName(data[0].name as string) })
+    // Papel do usuário — itens só de gestor (ex.: Equipe) ficam ocultos para vendedor
+    supabase.rpc('my_role').then(({ data }) => setIsGestor(data === 'gestor'))
   }, [pathname])
 
   // Fecha o drawer ao navegar no mobile
@@ -99,6 +108,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {nav.map((item, i) => {
           if ('divider' in item) return <div key={i} className="my-2 border-t border-slate-100" />
+          if (item.gestorOnly && !isGestor) return null
 
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           const Icon = item.icon
