@@ -2,20 +2,53 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Tour } from '@/components/onboarding/tour'
 import { createClient } from '@/lib/supabase/client'
-import { Menu, Bell, HelpCircle } from 'lucide-react'
+import { Menu, Bell, HelpCircle, Lock } from 'lucide-react'
+
+// Rotas de gestão da loja — bloqueadas para vendedor (que só usa o próprio acesso)
+const ADMIN_PREFIXES = ['/equipe', '/vendedores', '/motos', '/status', '/motivos-perda', '/relatorios', '/leads', '/origens']
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [role, setRole] = useState<'loading' | string | null>('loading')
+  const pathname = usePathname()
 
-  // Garante que o usuário tenha uma organização (loja) com config semeada.
-  // Idempotente: se já é membro de uma loja, só retorna a org; senão cria.
+  // Garante org (idempotente) e descobre o papel do usuário na loja.
   // Rede de segurança para sessões já autenticadas que não passaram pelo login agora.
   useEffect(() => {
-    createClient().rpc('ensure_org').then(() => {}, () => {})
+    (async () => {
+      const sb = createClient()
+      try { await sb.rpc('ensure_org') } catch {}
+      try {
+        const { data } = await sb.rpc('my_role')
+        setRole((data as string) ?? null)
+      } catch { setRole(null) }
+    })()
   }, [])
+
+  const isGestor = role === 'gestor' || role === 'tecnico'
+  const isAdminRoute = ADMIN_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + '/'))
+  const blocked = isAdminRoute && role !== 'loading' && !isGestor
+
+  const restricted = (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="text-center max-w-sm">
+        <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+          <Lock className="h-6 w-6 text-slate-400" />
+        </div>
+        <h2 className="text-base font-semibold text-slate-900">Acesso restrito</h2>
+        <p className="text-sm text-slate-500 mt-1">
+          Esta área é exclusiva de gestores. Como vendedor, você acessa seus próprios atendimentos e lembretes.
+        </p>
+        <Link href="/dashboard" className="inline-block mt-4 text-sm font-medium text-indigo-600 hover:underline">
+          Voltar ao início
+        </Link>
+      </div>
+    </div>
+  )
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden" suppressHydrationWarning>
@@ -55,7 +88,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 flex flex-col overflow-hidden">
-          {children}
+          {blocked
+            ? restricted
+            : isAdminRoute && role === 'loading'
+              ? null
+              : children}
         </main>
       </div>
     </div>

@@ -27,20 +27,22 @@ type NavItem =
   | { label: string; href: string; icon: typeof LayoutDashboard; tour?: string; badge?: boolean; gestorOnly?: boolean }
 
 const nav: NavItem[] = [
+  // Acesso de todos (inclusive vendedor — escopo dos próprios dados via RLS)
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
   { label: 'Atendimentos', href: '/atendimentos', icon: ClipboardList, tour: 'nav-atendimentos' },
   { label: 'Lembretes', href: '/lembretes', icon: Bell, badge: true, tour: 'nav-lembretes' },
   { divider: true },
-  { label: 'Leads', href: '/leads', icon: Inbox, tour: 'nav-leads' },
-  { label: 'Captação (QR)', href: '/origens', icon: QrCode, tour: 'nav-origens' },
+  // Gestão da loja — só gestor/técnico (vendedor não vê)
+  { label: 'Leads', href: '/leads', icon: Inbox, gestorOnly: true, tour: 'nav-leads' },
+  { label: 'Captação (QR)', href: '/origens', icon: QrCode, gestorOnly: true, tour: 'nav-origens' },
   { divider: true },
-  { label: 'Relatórios', href: '/relatorios', icon: BarChart2 },
+  { label: 'Relatórios', href: '/relatorios', icon: BarChart2, gestorOnly: true },
   { divider: true },
   { label: 'Equipe', href: '/equipe', icon: UserCog, gestorOnly: true, tour: 'nav-equipe' },
-  { label: 'Vendedores', href: '/vendedores', icon: Users, tour: 'nav-vendedores' },
-  { label: 'Tipos de Moto', href: '/motos', icon: Bike },
-  { label: 'Status', href: '/status', icon: Tag },
-  { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle },
+  { label: 'Vendedores', href: '/vendedores', icon: Users, gestorOnly: true, tour: 'nav-vendedores' },
+  { label: 'Tipos de Moto', href: '/motos', icon: Bike, gestorOnly: true },
+  { label: 'Status', href: '/status', icon: Tag, gestorOnly: true },
+  { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle, gestorOnly: true },
 ]
 
 interface SidebarProps {
@@ -82,6 +84,15 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     router.refresh()
   }
 
+  // Remove itens só-de-gestor para vendedor e colapsa divisores órfãos/duplicados
+  const visibleNav: NavItem[] = []
+  for (const item of nav) {
+    if (!('divider' in item) && item.gestorOnly && !isGestor) continue
+    if ('divider' in item && (visibleNav.length === 0 || 'divider' in visibleNav[visibleNav.length - 1])) continue
+    visibleNav.push(item)
+  }
+  while (visibleNav.length && 'divider' in visibleNav[visibleNav.length - 1]) visibleNav.pop()
+
   const inner = (
     <aside className="w-64 shrink-0 bg-white border-r border-slate-200 flex flex-col h-full">
       {/* Logo */}
@@ -106,9 +117,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
-        {nav.map((item, i) => {
-          if ('divider' in item) return <div key={i} className="my-2 border-t border-slate-100" />
-          if (item.gestorOnly && !isGestor) return null
+        {visibleNav.map((item, i) => {
+          if ('divider' in item) return <div key={`d${i}`} className="my-2 border-t border-slate-100" />
 
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           const Icon = item.icon
