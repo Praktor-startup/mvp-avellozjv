@@ -68,8 +68,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       .select('name')
       .limit(1)
       .then(({ data }) => { if (data && data[0]) setOrgName(data[0].name as string) })
-    // Papel do usuário — itens só de gestor (ex.: Equipe) ficam ocultos para vendedor
-    supabase.rpc('my_role').then(({ data }) => setIsGestor(data === 'gestor'))
+    // Papel do usuário — itens administrativos (ex.: Equipe) ficam ocultos para vendedor
+    supabase.rpc('my_role').then(({ data }) => setIsGestor(data === 'gestor' || data === 'tecnico'))
   }, [pathname])
 
   // Fecha o drawer ao navegar no mobile

@@ -10,9 +10,21 @@ import { Card } from '@/components/ui/card'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
 import { formatCPF, formatWhatsApp, validateCPF } from '@/lib/utils'
-import { Plus, Trash2, ShieldCheck, User, AlertTriangle, CheckCircle, Lock, Phone, IdCard, Mail } from 'lucide-react'
+import { Plus, Trash2, ShieldCheck, User, AlertTriangle, CheckCircle, Lock, Phone, IdCard, Mail, Wrench } from 'lucide-react'
 
-type Role = 'gestor' | 'vendedor'
+type Role = 'gestor' | 'vendedor' | 'tecnico'
+
+const ROLE_META: Record<Role, {
+  label: string
+  badge: 'default' | 'secondary' | 'warning'
+  icon: typeof ShieldCheck
+  iconBg: string
+  iconColor: string
+}> = {
+  tecnico:  { label: 'Técnico',  badge: 'warning',   icon: Wrench,      iconBg: 'bg-amber-100',  iconColor: 'text-amber-600' },
+  gestor:   { label: 'Gestor',   badge: 'default',   icon: ShieldCheck, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  vendedor: { label: 'Vendedor', badge: 'secondary', icon: User,        iconBg: 'bg-slate-100',  iconColor: 'text-slate-500' },
+}
 
 interface Member {
   user_id: string
@@ -85,7 +97,7 @@ export default function EquipePage() {
     }
     setShowModal(false)
     setSaving(false)
-    setSuccess(`Conta de ${form.role} criada para ${form.email.trim()}`)
+    setSuccess(`Conta de ${ROLE_META[form.role].label} criada para ${form.email.trim()}`)
     setTimeout(() => setSuccess(''), 5000)
     await load()
   }
@@ -100,8 +112,8 @@ export default function EquipePage() {
     await load()
   }
 
-  // Acesso restrito: vendedor não vê esta tela
-  if (myRole !== 'loading' && myRole !== 'gestor') {
+  // Acesso restrito: vendedor não vê esta tela (só técnico/gestor)
+  if (myRole !== 'loading' && myRole !== 'gestor' && myRole !== 'tecnico') {
     return (
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header title="Equipe" subtitle="Gestão de contas" />
@@ -120,14 +132,14 @@ export default function EquipePage() {
     )
   }
 
-  const gestores = members.filter((m) => m.role === 'gestor').length
+  const admins = members.filter((m) => m.role === 'gestor' || m.role === 'tecnico').length
   const vendedores = members.filter((m) => m.role === 'vendedor').length
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <Header
         title="Equipe"
-        subtitle={`${gestores} gestor${gestores !== 1 ? 'es' : ''} · ${vendedores} vendedor${vendedores !== 1 ? 'es' : ''}`}
+        subtitle={`${admins} gestor${admins !== 1 ? 'es' : ''}/técnico · ${vendedores} vendedor${vendedores !== 1 ? 'es' : ''}`}
         actions={<Button size="sm" onClick={openAdd}><Plus className="h-4 w-4" />Nova conta</Button>}
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
@@ -145,18 +157,17 @@ export default function EquipePage() {
             <p className="text-slate-400 text-sm">Nenhuma conta na loja</p>
           ) : (
             members.map((m) => {
-              const isGestor = m.role === 'gestor'
+              const meta = ROLE_META[m.role] ?? ROLE_META.vendedor
+              const RoleIcon = meta.icon
               return (
                 <Card key={m.user_id}>
                   <div className="p-5">
                     <div className="flex items-start justify-between mb-3">
-                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isGestor ? 'bg-indigo-100' : 'bg-slate-100'}`}>
-                        {isGestor
-                          ? <ShieldCheck className="h-5 w-5 text-indigo-600" />
-                          : <User className="h-5 w-5 text-slate-500" />}
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${meta.iconBg}`}>
+                        <RoleIcon className={`h-5 w-5 ${meta.iconColor}`} />
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Badge variant={isGestor ? 'default' : 'secondary'}>{isGestor ? 'Gestor' : 'Vendedor'}</Badge>
+                        <Badge variant={meta.badge}>{meta.label}</Badge>
                         {m.is_me && <Badge variant="outline">você</Badge>}
                       </div>
                     </div>
@@ -236,6 +247,7 @@ export default function EquipePage() {
             options={[
               { value: 'vendedor', label: 'Vendedor — opera só os próprios atendimentos' },
               { value: 'gestor', label: 'Gestor — acesso total + cadastra contas' },
+              { value: 'tecnico', label: 'Técnico — acesso técnico/administrativo' },
             ]}
           />
           <p className="text-xs text-slate-500">
