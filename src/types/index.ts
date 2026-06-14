@@ -7,6 +7,7 @@ export interface Seller {
   whatsapp: string
   active: boolean
   created_at: string
+  user_id?: string | null
 }
 
 export interface MotorcycleType {

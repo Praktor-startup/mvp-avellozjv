@@ -31,6 +31,9 @@ export default function NovoAtendimentoPage() {
   const [existingId, setExistingId] = useState<string | null>(null)
   const [existingClient, setExistingClient] = useState<{ name: string; phone: string | null } | null>(null)
   const [reused, setReused] = useState(false)
+  // Quando o usuário logado é vendedor, ele só registra atendimentos para si mesmo:
+  // o vendedor responsável é fixado no cadastro dele (não pode escolher outro).
+  const [lockedSeller, setLockedSeller] = useState<Seller | null>(null)
 
   const [form, setForm] = useState({
     name: '',
@@ -57,16 +60,29 @@ export default function NovoAtendimentoPage() {
   useEffect(() => {
     async function loadMeta() {
       const supabase = createClient()
-      const [s, st, m, lr] = await Promise.all([
+      const [s, st, m, lr, roleRes, userRes] = await Promise.all([
         supabase.from('sellers').select('*').eq('active', true).order('name'),
         supabase.from('statuses').select('*').eq('active', true).order('sort_order'),
         supabase.from('motorcycle_types').select('*').eq('active', true).order('model'),
         supabase.from('loss_reasons').select('*').eq('active', true).order('description'),
+        supabase.rpc('my_role'),
+        supabase.auth.getUser(),
       ])
-      setSellers((s.data ?? []) as Seller[])
+      const sellerList = (s.data ?? []) as Seller[]
+      setSellers(sellerList)
       setStatuses((st.data ?? []) as Status[])
       setMotos((m.data ?? []) as MotorcycleType[])
       setLossReasons((lr.data ?? []) as LossReason[])
+
+      // Vendedor: fixa o responsável no próprio cadastro
+      if (roleRes.data === 'vendedor') {
+        const uid = userRes.data.user?.id
+        const own = sellerList.find((x) => x.user_id === uid)
+        if (own) {
+          setLockedSeller(own)
+          setForm((f) => ({ ...f, seller_id: own.id }))
+        }
+      }
     }
     loadMeta()
   }, [])
@@ -338,15 +354,25 @@ export default function NovoAtendimentoPage() {
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Select
-                  label="Vendedor responsável"
-                  required
-                  value={form.seller_id}
-                  onChange={(e) => set('seller_id', e.target.value)}
-                  placeholder="Selecione o vendedor"
-                  options={sellers.map((s) => ({ value: s.id, label: s.name }))}
-                  error={errors.seller_id}
-                />
+                {lockedSeller ? (
+                  <Input
+                    label="Vendedor responsável"
+                    value={lockedSeller.name}
+                    readOnly
+                    disabled
+                    hint="Você é o responsável por este atendimento"
+                  />
+                ) : (
+                  <Select
+                    label="Vendedor responsável"
+                    required
+                    value={form.seller_id}
+                    onChange={(e) => set('seller_id', e.target.value)}
+                    placeholder="Selecione o vendedor"
+                    options={sellers.map((s) => ({ value: s.id, label: s.name }))}
+                    error={errors.seller_id}
+                  />
+                )}
                 <Select
                   label="Tipo de moto"
                   value={form.motorcycle_type_id}
