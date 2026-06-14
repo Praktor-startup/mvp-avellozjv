@@ -9,7 +9,8 @@ import { Select } from '@/components/ui/select'
 import { Card } from '@/components/ui/card'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, ShieldCheck, User, AlertTriangle, CheckCircle, Lock } from 'lucide-react'
+import { formatCPF, formatWhatsApp, validateCPF } from '@/lib/utils'
+import { Plus, Trash2, ShieldCheck, User, AlertTriangle, CheckCircle, Lock, Phone, IdCard, Mail } from 'lucide-react'
 
 type Role = 'gestor' | 'vendedor'
 
@@ -17,6 +18,8 @@ interface Member {
   user_id: string
   email: string
   nome: string
+  phone: string | null
+  cpf: string | null
   role: Role
   is_me: boolean
   created_at: string
@@ -28,7 +31,7 @@ export default function EquipePage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({ nome: '', email: '', password: '', role: 'vendedor' as Role })
+  const [form, setForm] = useState({ nome: '', email: '', phone: '', cpf: '', password: '', role: 'vendedor' as Role })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState('')
   const [success, setSuccess] = useState('')
@@ -48,7 +51,7 @@ export default function EquipePage() {
   useEffect(() => { load() }, [])
 
   function openAdd() {
-    setForm({ nome: '', email: '', password: '', role: 'vendedor' })
+    setForm({ nome: '', email: '', phone: '', cpf: '', password: '', role: 'vendedor' })
     setErrors({})
     setFormError('')
     setShowModal(true)
@@ -57,8 +60,10 @@ export default function EquipePage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     const errs: Record<string, string> = {}
-    if (!form.nome.trim()) errs.nome = 'Nome obrigatório'
+    if (!form.nome.trim()) errs.nome = 'Nome completo obrigatório'
     if (!form.email.trim()) errs.email = 'E-mail obrigatório'
+    if (form.phone.replace(/\D/g, '').length < 10) errs.phone = 'Telefone com DDD obrigatório'
+    if (!validateCPF(form.cpf)) errs.cpf = 'CPF inválido'
     if (form.password.length < 6) errs.password = 'Mínimo 6 caracteres'
     if (Object.keys(errs).length) { setErrors(errs); return }
 
@@ -70,6 +75,8 @@ export default function EquipePage() {
       p_password: form.password,
       p_nome: form.nome.trim(),
       p_role: form.role,
+      p_phone: form.phone.trim(),
+      p_cpf: form.cpf.trim(),
     })
     if (error) {
       setFormError(error.message || 'Erro ao cadastrar conta')
@@ -154,7 +161,21 @@ export default function EquipePage() {
                       </div>
                     </div>
                     <h3 className="font-semibold text-slate-900 truncate" title={m.nome}>{m.nome}</h3>
-                    <p className="text-sm text-slate-500 truncate mt-0.5" title={m.email}>{m.email}</p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-slate-500 flex items-center gap-1.5 truncate" title={m.email}>
+                        <Mail className="h-3.5 w-3.5 shrink-0" />{m.email}
+                      </p>
+                      {m.phone && (
+                        <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5 shrink-0" />{formatWhatsApp(m.phone)}
+                        </p>
+                      )}
+                      {m.cpf && (
+                        <p className="text-sm text-slate-500 flex items-center gap-1.5">
+                          <IdCard className="h-3.5 w-3.5 shrink-0" />{formatCPF(m.cpf)}
+                        </p>
+                      )}
+                    </div>
                     {!m.is_me && (
                       <div className="mt-4">
                         <Button
@@ -190,9 +211,19 @@ export default function EquipePage() {
             error={errors.nome} placeholder="Nome completo"
           />
           <Input
+            label="Telefone" required value={form.phone}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            error={errors.phone} placeholder="(83) 99999-9999" inputMode="tel"
+          />
+          <Input
             label="E-mail" type="email" required value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             error={errors.email} placeholder="email@avelloz.com.br" autoComplete="off"
+          />
+          <Input
+            label="CPF" required value={form.cpf}
+            onChange={(e) => setForm((f) => ({ ...f, cpf: e.target.value }))}
+            error={errors.cpf} placeholder="000.000.000-00" inputMode="numeric"
           />
           <Input
             label="Senha" type="password" required value={form.password}
