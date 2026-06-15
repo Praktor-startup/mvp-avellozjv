@@ -55,7 +55,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
   const router = useRouter()
   const [pendingCount, setPendingCount] = useState(0)
   const [orgName, setOrgName] = useState<string>('Gestão comercial')
-  const [isGestor, setIsGestor] = useState(false)
+  const [isGestor, setIsGestor] = useState<boolean | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -64,14 +64,14 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       .select('id', { count: 'exact', head: true })
       .eq('status', 'pending')
       .then(({ count }) => setPendingCount(count ?? 0))
-    // Nome da loja atual — deixa claro em qual conta/org o usuário está logado
     supabase
       .from('organizations')
       .select('name')
       .limit(1)
       .then(({ data }) => { if (data && data[0]) setOrgName(data[0].name as string) })
-    // Papel do usuário — itens administrativos (ex.: Equipe) ficam ocultos para vendedor
-    supabase.rpc('my_role').then(({ data }) => setIsGestor(data === 'gestor' || data === 'tecnico'))
+    supabase.rpc('my_role').then(({ data }) => {
+      setIsGestor(data === 'gestor' || data === 'tecnico')
+    })
   }, [pathname])
 
   // Fecha o drawer ao navegar no mobile
