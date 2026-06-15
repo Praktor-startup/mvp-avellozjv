@@ -116,15 +116,15 @@ export default function AtendimentosPage() {
                 placeholder="Buscar por nome ou CPF..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-all"
+                className="w-full pl-9 pr-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
               />
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
                 hasFilters
-                  ? 'bg-indigo-600 border-indigo-600 text-white'
-                  : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'
+                  ? 'bg-brand-600 border-brand-600 text-white'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-brand-300'
               }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -153,7 +153,7 @@ export default function AtendimentosPage() {
                   <select
                     value={filterSeller}
                     onChange={(e) => setFilterSeller(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 bg-white"
                   >
                     <option value="">Todos</option>
                     {sellers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -164,7 +164,7 @@ export default function AtendimentosPage() {
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 bg-white"
                   >
                     <option value="">Todos</option>
                     {statuses.map((s) => <option key={s.id} value={s.id}>{s.description}</option>)}
@@ -175,7 +175,7 @@ export default function AtendimentosPage() {
                   <select
                     value={filterReminder}
                     onChange={(e) => setFilterReminder(e.target.value)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-white"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 bg-white"
                   >
                     <option value="">Todos</option>
                     <option value="yes">Com lembrete ativo</option>
@@ -203,8 +203,8 @@ export default function AtendimentosPage() {
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-black text-indigo-600">{s.name.charAt(0).toUpperCase()}</span>
+                        <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+                          <span className="text-xs font-black text-brand-600">{s.name.charAt(0).toUpperCase()}</span>
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-slate-900 text-sm truncate">{s.name}</p>
@@ -248,8 +248,8 @@ export default function AtendimentosPage() {
                         <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{formatDate(s.entry_date)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                              <span className="text-xs font-black text-indigo-600">{s.name.charAt(0).toUpperCase()}</span>
+                            <div className="h-7 w-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+                              <span className="text-xs font-black text-brand-600">{s.name.charAt(0).toUpperCase()}</span>
                             </div>
                             <span className="font-semibold text-slate-900 whitespace-nowrap">{s.name}</span>
                           </div>

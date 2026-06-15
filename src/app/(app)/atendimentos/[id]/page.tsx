@@ -394,7 +394,7 @@ export default function AtendimentoDetailPage() {
                         )}
                         {c.file_url && (
                           <a href={c.file_url} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline mt-1">
+                            className="inline-flex items-center gap-1 text-xs text-brand-600 hover:underline mt-1">
                             <FileText className="h-3 w-3" />
                             {c.file_name ?? 'Ver arquivo'}
                           </a>
@@ -419,7 +419,7 @@ export default function AtendimentoDetailPage() {
                     WhatsApp do cliente
                   </a>
                 ) : (
-                  <p className="text-xs text-slate-400">Sem telefone do cliente. <Link href={`/atendimentos/${id}/editar`} className="text-indigo-600 underline">Adicionar</Link></p>
+                  <p className="text-xs text-slate-400">Sem telefone do cliente. <Link href={`/atendimentos/${id}/editar`} className="text-brand-600 underline">Adicionar</Link></p>
                 )}
                 {service.seller?.whatsapp && (
                   <a href={whatsappHref(service.seller.whatsapp)} target="_blank" rel="noopener noreferrer"
@@ -445,7 +445,7 @@ export default function AtendimentoDetailPage() {
                     Marcar venda perdida
                   </Button>
                   <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => setShowAddCheck(true)}>
-                    <Plus className="h-4 w-4 text-indigo-600" />
+                    <Plus className="h-4 w-4 text-brand-600" />
                     Registrar reconsulta
                   </Button>
                 </CardContent>
@@ -559,7 +559,7 @@ export default function AtendimentoDetailPage() {
             <label className="text-sm font-medium text-slate-700 block mb-1.5">
               Arquivo da consulta
             </label>
-            <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-slate-200 hover:border-indigo-300 cursor-pointer transition-colors">
+            <label className="flex items-center gap-3 px-4 py-3 rounded-lg border-2 border-dashed border-slate-200 hover:border-brand-300 cursor-pointer transition-colors">
               <Upload className="h-4 w-4 text-slate-400" />
               <span className="text-sm text-slate-500">
                 {checkFile ? checkFile.name : 'Clique para selecionar (JPG, PNG, PDF, WEBP)'}

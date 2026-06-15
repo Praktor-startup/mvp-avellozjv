@@ -126,9 +126,9 @@ export default function DashboardPage() {
                 label: 'Aprovações',
                 value: stats?.total_approved ?? '—',
                 icon: CheckCircle,
-                color: 'text-indigo-400',
-                bg: 'bg-indigo-400/10',
-                border: 'border-indigo-400/20',
+                color: 'text-brand-400',
+                bg: 'bg-brand-400/10',
+                border: 'border-brand-400/20',
               },
               {
                 label: 'Reconsultas pendentes',
@@ -191,7 +191,7 @@ export default function DashboardPage() {
             <div className="space-y-3">
               {[
                 { label: 'Entradas na loja', value: stats.total_entries, max: stats.total_entries, color: 'bg-slate-700' },
-                { label: 'Atendidos por vendedor', value: stats.total_attended, max: stats.total_entries, color: 'bg-indigo-500' },
+                { label: 'Atendidos por vendedor', value: stats.total_attended, max: stats.total_entries, color: 'bg-brand-500' },
                 { label: 'Consultas de crédito', value: stats.total_consultations, max: stats.total_entries, color: 'bg-blue-500' },
                 { label: 'Aprovados', value: stats.total_approved, max: stats.total_entries, color: 'bg-emerald-500' },
                 { label: 'Vendas fechadas', value: stats.total_closed, max: stats.total_entries, color: 'bg-emerald-600' },
@@ -251,7 +251,7 @@ export default function DashboardPage() {
                   )}
                 </div>
               </div>
-              <Link href="/lembretes" className="text-xs text-indigo-600 font-semibold flex items-center gap-0.5 hover:underline">
+              <Link href="/lembretes" className="text-xs text-brand-600 font-semibold flex items-center gap-0.5 hover:underline">
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -296,12 +296,12 @@ export default function DashboardPage() {
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5 text-indigo-600" />
+                <div className="w-7 h-7 rounded-lg bg-brand-100 flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-brand-600" />
                 </div>
                 <h2 className="text-sm font-bold text-slate-900">Últimos atendimentos</h2>
               </div>
-              <Link href="/atendimentos" className="text-xs text-indigo-600 font-semibold flex items-center gap-0.5 hover:underline">
+              <Link href="/atendimentos" className="text-xs text-brand-600 font-semibold flex items-center gap-0.5 hover:underline">
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -318,8 +318,8 @@ export default function DashboardPage() {
                     href={`/atendimentos/${s.id}`}
                     className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-black text-indigo-600">{s.name.charAt(0).toUpperCase()}</span>
+                    <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-black text-brand-600">{s.name.charAt(0).toUpperCase()}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-slate-900 truncate">{s.name}</p>

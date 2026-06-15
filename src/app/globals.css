@@ -5,23 +5,43 @@
   --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --primary: #6366f1;
+  --border: #e7ebf0;
+  --input: #d8dee6;
+  --primary: #F26B21;
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
   --secondary-foreground: #475569;
   --muted: #f1f5f9;
   --muted-foreground: #94a3b8;
-  --accent: #f1f5f9;
-  --destructive: #ef4444;
-  --ring: #6366f1;
+  --accent: #FFF1EA;
+  --destructive: #dc2626;
+  --ring: #F26B21;
   --radius: 0.75rem;
+}
+
+/*
+ * Marca Avelloz — rampa laranja (cores oficiais da página de vendas).
+ * Mantém a mesma escala numérica que o app usava no acento, então
+ * brand-600 = ação primária (#F26B21) e brand-700 = hover (#D8550F).
+ */
+@theme {
+  --color-brand-50: #FFF1EA;
+  --color-brand-100: #FFE3D1;
+  --color-brand-200: #FBD9C5;
+  --color-brand-300: #F8BC97;
+  --color-brand-400: #F59459;
+  --color-brand-500: #F47A33;
+  --color-brand-600: #F26B21;
+  --color-brand-700: #D8550F;
+  --color-brand-800: #A23E08;
+  --color-brand-900: #7C2F06;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

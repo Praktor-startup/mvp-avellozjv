@@ -117,12 +117,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        background:
+          'radial-gradient(130% 130% at 8% 0%, #F26B21 0%, #e25c14 24%, #7d3b6d 58%, #1B2A8B 100%)',
+      }}
+    >
+      <div className="w-full max-w-sm relative">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl p-8">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-brand-600 flex items-center justify-center">
               <Bike className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -250,7 +256,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => switchMode('login')}
-              className="w-full text-sm text-indigo-600 hover:underline text-center mt-2"
+              className="w-full text-sm text-brand-600 hover:underline text-center mt-2"
             >
               Ir para o login
             </button>
@@ -274,6 +280,9 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+        <p className="text-center text-white/80 text-xs font-medium mt-5">
+          Avelloz Motos Torre — João Pessoa
+        </p>
       </div>
     </div>
   )

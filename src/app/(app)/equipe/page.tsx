@@ -22,7 +22,7 @@ const ROLE_META: Record<Role, {
   iconColor: string
 }> = {
   tecnico:  { label: 'Técnico',  badge: 'warning',   icon: Wrench,      iconBg: 'bg-amber-100',  iconColor: 'text-amber-600' },
-  gestor:   { label: 'Gestor',   badge: 'default',   icon: ShieldCheck, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  gestor:   { label: 'Gestor',   badge: 'default',   icon: ShieldCheck, iconBg: 'bg-brand-100', iconColor: 'text-brand-600' },
   vendedor: { label: 'Vendedor', badge: 'secondary', icon: User,        iconBg: 'bg-slate-100',  iconColor: 'text-slate-500' },
 }
 

@@ -82,10 +82,10 @@ export default function LembretesPage() {
                   const isFollowup = r.type === 'sale_followup'
                   const phone = r.customer_service?.phone
                   return (
-                    <Card key={r.id} className={cn('border-l-4', isFollowup ? 'border-l-emerald-400' : variant === 'danger' ? 'border-l-red-400' : variant === 'warning' ? 'border-l-amber-400' : 'border-l-indigo-300')}>
+                    <Card key={r.id} className={cn('border-l-4', isFollowup ? 'border-l-emerald-400' : variant === 'danger' ? 'border-l-red-400' : variant === 'warning' ? 'border-l-amber-400' : 'border-l-brand-300')}>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 px-5 py-4">
                         <div className={cn('h-9 w-9 rounded-xl flex items-center justify-center shrink-0',
-                          isFollowup ? 'bg-emerald-100' : variant === 'danger' ? 'bg-red-100' : variant === 'warning' ? 'bg-amber-100' : 'bg-indigo-100'
+                          isFollowup ? 'bg-emerald-100' : variant === 'danger' ? 'bg-red-100' : variant === 'warning' ? 'bg-amber-100' : 'bg-brand-100'
                         )}>
                           {isFollowup
                             ? <ShoppingBag className="h-4 w-4 text-emerald-600" />
@@ -96,7 +96,7 @@ export default function LembretesPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Link href={`/atendimentos/${r.customer_service?.id}`} className="font-medium text-slate-900 hover:text-indigo-600 text-sm">
+                            <Link href={`/atendimentos/${r.customer_service?.id}`} className="font-medium text-slate-900 hover:text-brand-600 text-sm">
                               {r.customer_service?.name ?? '—'}
                             </Link>
                             <Badge variant={isFollowup ? 'success' : 'default'} className="text-xs">{reminderTypeLabel(r.type)}</Badge>

@@ -98,7 +98,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Logo */}
       <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+          <div className="h-8 w-8 rounded-lg bg-brand-600 flex items-center justify-center shrink-0">
             <Bike className="h-4 w-4 text-white" />
           </div>
           <div className="min-w-0">
@@ -131,11 +131,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group',
                 isActive
-                  ? 'bg-indigo-50 text-indigo-700'
+                  ? 'bg-brand-50 text-brand-700'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               )}
             >
-              <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600')} />
+              <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-brand-600' : 'text-slate-400 group-hover:text-slate-600')} />
               <span className="flex-1">{item.label}</span>
               {item.badge && pendingCount > 0 && (
                 <span className="h-5 min-w-5 px-1 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">

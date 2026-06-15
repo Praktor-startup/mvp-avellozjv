@@ -113,7 +113,7 @@ export default function StatusPage() {
                   type="checkbox"
                   checked={form[key as keyof typeof form] as boolean}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.checked }))}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
                 />
                 <span className="text-sm text-slate-700">{label}</span>
               </label>

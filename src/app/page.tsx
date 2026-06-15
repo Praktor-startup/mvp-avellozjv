@@ -90,13 +90,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5 flex items-center justify-between h-14">
           <div className="flex items-center gap-2.5">
             <span className="text-xl font-black tracking-tight text-white">AVELLOZ</span>
-            <span className="hidden sm:block text-[10px] font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase tracking-widest">
+            <span className="hidden sm:block text-[10px] font-medium text-brand-400 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded-full uppercase tracking-widest">
               Gestão
             </span>
           </div>
           <a
             href="#acesso"
-            className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors"
+            className="text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 px-4 py-2 rounded-lg transition-colors"
           >
             Acessar
           </a>
@@ -109,12 +109,12 @@ export default function LandingPage() {
 
           {/* Tagline */}
           <div className="text-center mb-10 sm:mb-14">
-            <p className="text-indigo-400 text-xs font-bold uppercase tracking-[0.2em] mb-4">
+            <p className="text-brand-400 text-xs font-bold uppercase tracking-[0.2em] mb-4">
               Controle de atendimento · Financiamento · Retorno de clientes
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight mb-5">
               Sua concessionária<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-violet-400">
                 no controle total
               </span>
             </h1>
@@ -135,7 +135,7 @@ export default function LandingPage() {
                     type="button"
                     onClick={() => switchMode(m)}
                     className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-all ${
-                      mode === m ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                      mode === m ? 'bg-brand-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     {m === 'login' ? 'Entrar' : 'Criar conta'}
@@ -168,7 +168,7 @@ export default function LandingPage() {
                       onChange={(e) => { setEmail(e.target.value); setError('') }}
                       placeholder="seu@email.com"
                       autoComplete="email"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all"
                     />
                   </div>
                   <div>
@@ -181,14 +181,14 @@ export default function LandingPage() {
                         onChange={(e) => { setPassword(e.target.value); setError('') }}
                         placeholder="••••••••"
                         autoComplete="current-password"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all pr-10"
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all pr-10"
                       />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
-                  <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg transition-colors text-sm mt-1">
+                  <button type="submit" disabled={loading} className="w-full bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg transition-colors text-sm mt-1">
                     {loading ? 'Entrando...' : 'Entrar'}
                   </button>
                 </form>
@@ -200,18 +200,18 @@ export default function LandingPage() {
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5">Nome completo</label>
                     <input type="text" required value={nome} onChange={(e) => { setNome(e.target.value); setError('') }} placeholder="Seu nome" autoComplete="name"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all" />
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5">E-mail</label>
                     <input type="email" required value={email} onChange={(e) => { setEmail(e.target.value); setError('') }} placeholder="seu@email.com" autoComplete="email"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all" />
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5">Senha</label>
                     <div className="relative">
                       <input type={showPassword ? 'text' : 'password'} required value={password} onChange={(e) => { setPassword(e.target.value); setError('') }} placeholder="Mínimo 6 caracteres" autoComplete="new-password"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all pr-10" />
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all pr-10" />
                       <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -220,9 +220,9 @@ export default function LandingPage() {
                   <div>
                     <label className="block text-xs font-medium text-slate-400 mb-1.5">Confirmar senha</label>
                     <input type="password" required value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setError('') }} placeholder="Repita a senha" autoComplete="new-password"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all" />
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all" />
                   </div>
-                  <button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg transition-colors text-sm mt-1">
+                  <button type="submit" disabled={loading} className="w-full bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white font-bold py-2.5 rounded-lg transition-colors text-sm mt-1">
                     {loading ? 'Criando conta...' : 'Criar conta'}
                   </button>
                 </form>
@@ -230,7 +230,7 @@ export default function LandingPage() {
 
               {/* Pós-cadastro */}
               {mode === 'cadastro' && success && (
-                <button type="button" onClick={() => switchMode('login')} className="w-full text-sm text-indigo-400 hover:text-indigo-300 text-center mt-2 transition-colors">
+                <button type="button" onClick={() => switchMode('login')} className="w-full text-sm text-brand-400 hover:text-brand-300 text-center mt-2 transition-colors">
                   Ir para o login →
                 </button>
               )}
@@ -260,7 +260,7 @@ export default function LandingPage() {
       <section className="py-16 sm:py-20 px-5 bg-[#0f0f13]">
         <div className="max-w-6xl mx-auto">
           <div className="mb-10 sm:mb-12">
-            <p className="text-indigo-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Funcionalidades</p>
+            <p className="text-brand-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Funcionalidades</p>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
               Tudo que sua loja precisa
             </h2>
@@ -275,9 +275,9 @@ export default function LandingPage() {
               { icon: FileText, title: 'Relatórios', desc: 'Exporte dados de atendimentos e resultados para análise.' },
               { icon: ClipboardList, title: 'Funil com status', desc: 'Em análise, aprovado, fechado ou perdido — com motivo registrado.' },
             ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl p-5 transition-all cursor-default">
-                <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center mb-4">
-                  <Icon className="w-4 h-4 text-indigo-400" />
+              <div key={title} className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-brand-500/30 rounded-xl p-5 transition-all cursor-default">
+                <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+                  <Icon className="w-4 h-4 text-brand-400" />
                 </div>
                 <h3 className="font-bold text-white text-sm mb-1.5">{title}</h3>
                 <p className="text-slate-500 text-xs leading-relaxed">{desc}</p>
@@ -291,7 +291,7 @@ export default function LandingPage() {
       <section className="py-16 sm:py-20 px-5 bg-[#0c0c10]">
         <div className="max-w-6xl mx-auto">
           <div className="mb-10 sm:mb-12">
-            <p className="text-indigo-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Fluxo</p>
+            <p className="text-brand-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Fluxo</p>
             <h2 className="text-2xl sm:text-3xl font-black text-white">
               Como funciona na prática
             </h2>
@@ -306,8 +306,8 @@ export default function LandingPage() {
             ].map(({ step, icon: Icon, title, desc }) => (
               <div key={step} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
                 <p className="absolute top-4 right-5 text-4xl font-black text-white/[0.04] select-none">{step}</p>
-                <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center mb-4">
-                  <Icon className="w-4 h-4 text-indigo-400" />
+                <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center mb-4">
+                  <Icon className="w-4 h-4 text-brand-400" />
                 </div>
                 <h3 className="font-bold text-white text-sm mb-1.5">{title}</h3>
                 <p className="text-slate-500 text-xs leading-relaxed">{desc}</p>
@@ -321,7 +321,7 @@ export default function LandingPage() {
       <section className="py-16 sm:py-20 px-5 bg-[#0f0f13]">
         <div className="max-w-2xl mx-auto">
           <div className="mb-10">
-            <p className="text-indigo-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Dúvidas</p>
+            <p className="text-brand-400 text-xs font-bold uppercase tracking-[0.2em] mb-3">Dúvidas</p>
             <h2 className="text-2xl sm:text-3xl font-black text-white">Perguntas frequentes</h2>
           </div>
 
@@ -334,7 +334,7 @@ export default function LandingPage() {
               { q: 'Quanto tempo leva para começar?', a: 'Um dia no máximo. Cadastra a loja, adiciona vendedores e começa a registrar. Sem treinamento longo.' },
             ].map((item, i) => (
               <details key={i} className="group bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden">
-                <summary className="flex items-center justify-between cursor-pointer px-5 py-4 text-sm font-semibold text-white hover:text-indigo-300 transition-colors list-none">
+                <summary className="flex items-center justify-between cursor-pointer px-5 py-4 text-sm font-semibold text-white hover:text-brand-300 transition-colors list-none">
                   {item.q}
                   <ChevronDown className="w-4 h-4 text-slate-500 group-open:rotate-180 transition-transform shrink-0 ml-3" />
                 </summary>
@@ -354,7 +354,7 @@ export default function LandingPage() {
           <p className="text-slate-500 text-sm mb-6">Use as credenciais fornecidas para entrar na plataforma.</p>
           <a
             href="#acesso"
-            className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors"
+            className="inline-block bg-brand-600 hover:bg-brand-500 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors"
           >
             Ir para o login
           </a>

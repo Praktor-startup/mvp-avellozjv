@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <p className="text-sm text-slate-500 mt-1">
           Esta área é exclusiva de gestores. Como vendedor, você acessa seus próprios atendimentos e lembretes.
         </p>
-        <Link href="/dashboard" className="inline-block mt-4 text-sm font-medium text-indigo-600 hover:underline">
+        <Link href="/dashboard" className="inline-block mt-4 text-sm font-medium text-brand-600 hover:underline">
           Voltar ao início
         </Link>
       </div>
@@ -65,7 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-indigo-600 flex items-center justify-center">
+            <div className="h-7 w-7 rounded-md bg-brand-600 flex items-center justify-center">
               <span className="text-white text-xs font-black">A</span>
             </div>
             <span className="text-sm font-bold text-slate-900">Avelloz</span>

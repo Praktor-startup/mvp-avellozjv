@@ -76,8 +76,8 @@ export default function VendedoresPage() {
               <Card key={s.id} className={!s.active ? 'opacity-60' : ''}>
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-3">
-                    <div className="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                      <span className="text-sm font-bold text-indigo-600">{s.name.charAt(0)}</span>
+                    <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                      <span className="text-sm font-bold text-brand-600">{s.name.charAt(0)}</span>
                     </div>
                     <Badge variant={s.active ? 'success' : 'secondary'}>{s.active ? 'Ativo' : 'Inativo'}</Badge>
                   </div>

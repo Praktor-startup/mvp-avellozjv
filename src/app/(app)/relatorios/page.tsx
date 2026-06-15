@@ -89,8 +89,8 @@ export default function RelatoriosPage() {
             <Card key={s.id}>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-indigo-100 flex items-center justify-center">
-                    <span className="text-sm font-bold text-indigo-600">{s.name.charAt(0)}</span>
+                  <div className="h-9 w-9 rounded-xl bg-brand-100 flex items-center justify-center">
+                    <span className="text-sm font-bold text-brand-600">{s.name.charAt(0)}</span>
                   </div>
                   <CardTitle>{s.name}</CardTitle>
                   {s.total_reminders > 0 && (
