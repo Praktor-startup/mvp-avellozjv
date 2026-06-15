@@ -106,51 +106,25 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col flex-1 overflow-y-auto bg-slate-50">
 
-      {/* Header escuro com métricas principais */}
-      <div className="bg-slate-900 text-white px-5 py-6 sm:px-8 sm:py-8">
+      {/* Header claro + métricas principais (Claude Design) */}
+      <div className="px-5 py-6 sm:px-8 sm:py-7 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <p className="text-slate-400 text-xs font-medium capitalize mb-1">{today}</p>
-          <h1 className="text-xl sm:text-2xl font-black mb-6">Dashboard</h1>
+          <p className="text-slate-400 text-xs font-medium capitalize mb-0.5">{today}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-6">Dashboard</h1>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {[
-              {
-                label: 'Vendas fechadas',
-                value: stats?.total_closed ?? '—',
-                icon: ShoppingBag,
-                color: 'text-emerald-400',
-                bg: 'bg-emerald-400/10',
-                border: 'border-emerald-400/20',
-              },
-              {
-                label: 'Aprovações',
-                value: stats?.total_approved ?? '—',
-                icon: CheckCircle,
-                color: 'text-brand-400',
-                bg: 'bg-brand-400/10',
-                border: 'border-brand-400/20',
-              },
-              {
-                label: 'Reconsultas pendentes',
-                value: stats?.total_pending_reminders ?? '—',
-                icon: Bell,
-                color: 'text-amber-400',
-                bg: 'bg-amber-400/10',
-                border: 'border-amber-400/20',
-              },
-              {
-                label: 'Entradas na loja',
-                value: stats?.total_entries ?? '—',
-                icon: Users,
-                color: 'text-slate-300',
-                bg: 'bg-white/5',
-                border: 'border-white/10',
-              },
-            ].map(({ label, value, icon: Icon, color, bg, border }) => (
-              <div key={label} className={`rounded-xl border ${border} ${bg} p-4`}>
-                <Icon className={`w-4 h-4 ${color} mb-2`} />
-                <p className="text-2xl sm:text-3xl font-black text-white tabular-nums">{value}</p>
-                <p className="text-xs text-slate-400 mt-1 leading-tight">{label}</p>
+              { label: 'Vendas fechadas', value: stats?.total_closed ?? '—', icon: ShoppingBag, chip: 'bg-emerald-50 text-emerald-600' },
+              { label: 'Aprovações', value: stats?.total_approved ?? '—', icon: CheckCircle, chip: 'bg-brand-50 text-brand-700' },
+              { label: 'Reconsultas pendentes', value: stats?.total_pending_reminders ?? '—', icon: Bell, chip: 'bg-amber-50 text-amber-600' },
+              { label: 'Entradas na loja', value: stats?.total_entries ?? '—', icon: Users, chip: 'bg-blue-50 text-blue-800' },
+            ].map(({ label, value, icon: Icon, chip }) => (
+              <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <span className={`inline-flex items-center justify-center w-9 h-9 rounded-xl mb-3 ${chip}`}>
+                  <Icon className="w-[18px] h-[18px]" />
+                </span>
+                <p className="text-2xl sm:text-3xl font-bold text-slate-900 tabular-nums leading-none">{value}</p>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1.5 leading-tight">{label}</p>
               </div>
             ))}
           </div>
@@ -190,11 +164,11 @@ export default function DashboardPage() {
 
             <div className="space-y-3">
               {[
-                { label: 'Entradas na loja', value: stats.total_entries, max: stats.total_entries, color: 'bg-slate-700' },
-                { label: 'Atendidos por vendedor', value: stats.total_attended, max: stats.total_entries, color: 'bg-brand-500' },
-                { label: 'Consultas de crédito', value: stats.total_consultations, max: stats.total_entries, color: 'bg-blue-500' },
-                { label: 'Aprovados', value: stats.total_approved, max: stats.total_entries, color: 'bg-emerald-500' },
-                { label: 'Vendas fechadas', value: stats.total_closed, max: stats.total_entries, color: 'bg-emerald-600' },
+                { label: 'Entradas na loja', value: stats.total_entries, max: stats.total_entries, color: '#1B2A8B' },
+                { label: 'Atendidos por vendedor', value: stats.total_attended, max: stats.total_entries, color: '#3A44A8' },
+                { label: 'Consultas de crédito', value: stats.total_consultations, max: stats.total_entries, color: '#5B64C0' },
+                { label: 'Aprovados', value: stats.total_approved, max: stats.total_entries, color: '#F26B21' },
+                { label: 'Vendas fechadas', value: stats.total_closed, max: stats.total_entries, color: '#16A34A' },
               ].map(({ label, value, max, color }) => {
                 const p = max ? Math.max(4, Math.round((value / max) * 100)) : 0
                 return (
@@ -202,8 +176,8 @@ export default function DashboardPage() {
                     <p className="text-xs text-slate-500 w-36 sm:w-44 shrink-0 truncate">{label}</p>
                     <div className="flex-1 bg-slate-100 rounded-full h-2.5 overflow-hidden">
                       <div
-                        className={`h-full rounded-full transition-all duration-700 ${color}`}
-                        style={{ width: `${p}%` }}
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${p}%`, backgroundColor: color }}
                       />
                     </div>
                     <p className="text-sm font-bold text-slate-900 tabular-nums w-6 text-right shrink-0">{value}</p>
