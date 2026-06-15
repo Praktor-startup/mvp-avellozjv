@@ -32,6 +32,20 @@ function statusVariant(status: ServiceRow['status']) {
   return 'default' as const
 }
 
+// Avatar com cor semântica pelo status (igual ao design do Claude Design)
+const AVATAR_COLORS: Record<string, string> = {
+  success: 'bg-emerald-50 text-emerald-700',
+  danger: 'bg-red-50 text-red-700',
+  warning: 'bg-amber-50 text-amber-700',
+  default: 'bg-blue-50 text-blue-700',
+  secondary: 'bg-slate-100 text-slate-500',
+}
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
+}
+
 export default function AtendimentosPage() {
   const router = useRouter()
   const [services, setServices] = useState<ServiceRow[]>([])
@@ -203,8 +217,8 @@ export default function AtendimentosPage() {
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
-                          <span className="text-xs font-black text-brand-600">{s.name.charAt(0).toUpperCase()}</span>
+                        <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${AVATAR_COLORS[statusVariant(s.status)]}`}>
+                          <span className="text-xs font-semibold">{initials(s.name)}</span>
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-slate-900 text-sm truncate">{s.name}</p>
@@ -248,8 +262,8 @@ export default function AtendimentosPage() {
                         <td className="px-4 py-3 text-slate-500 whitespace-nowrap text-xs">{formatDate(s.entry_date)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-full bg-brand-100 flex items-center justify-center shrink-0">
-                              <span className="text-xs font-black text-brand-600">{s.name.charAt(0).toUpperCase()}</span>
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${AVATAR_COLORS[statusVariant(s.status)]}`}>
+                              <span className="text-xs font-semibold">{initials(s.name)}</span>
                             </div>
                             <span className="font-semibold text-slate-900 whitespace-nowrap">{s.name}</span>
                           </div>

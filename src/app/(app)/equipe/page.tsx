@@ -16,13 +16,13 @@ type Role = 'gestor' | 'vendedor' | 'tecnico'
 
 const ROLE_META: Record<Role, {
   label: string
-  badge: 'default' | 'secondary' | 'warning'
+  badge: 'info' | 'secondary' | 'warning'
   icon: typeof ShieldCheck
   iconBg: string
   iconColor: string
 }> = {
   tecnico:  { label: 'Técnico',  badge: 'warning',   icon: Wrench,      iconBg: 'bg-amber-100',  iconColor: 'text-amber-600' },
-  gestor:   { label: 'Gestor',   badge: 'default',   icon: ShieldCheck, iconBg: 'bg-brand-100', iconColor: 'text-brand-600' },
+  gestor:   { label: 'Gestor',   badge: 'info',      icon: ShieldCheck, iconBg: 'bg-blue-50',    iconColor: 'text-blue-700' },
   vendedor: { label: 'Vendedor', badge: 'secondary', icon: User,        iconBg: 'bg-slate-100',  iconColor: 'text-slate-500' },
 }
 
