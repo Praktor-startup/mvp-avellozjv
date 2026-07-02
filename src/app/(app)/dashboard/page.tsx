@@ -234,6 +234,10 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+            <p className="text-[11px] text-slate-400 mt-3">
+              A taxa de Consulta pode passar de 100% quando o mesmo cliente faz mais de uma consulta de crédito no mês
+              (ex: reconsulta após restrição) — ela conta consultas, não clientes distintos.
+            </p>
           </div>
         )}
 

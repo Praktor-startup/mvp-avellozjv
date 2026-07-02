@@ -272,7 +272,12 @@ export default function RelatoriosPage() {
             {stats.length === 0 ? (
               <div className="text-center text-slate-400 py-12">Nenhum vendedor cadastrado</div>
             ) : (
-              stats.map((s, i) => (
+              <>
+                <p className="text-xs text-slate-400 -mb-1">
+                  A Taxa de consulta pode passar de 100% quando o mesmo cliente tem mais de uma consulta de crédito no
+                  período (ex: reconsulta após restrição) — ela conta consultas, não clientes distintos.
+                </p>
+                {stats.map((s, i) => (
                 <Card key={s.id}>
                   <CardHeader>
                     <div className="flex items-center gap-3">
@@ -319,7 +324,8 @@ export default function RelatoriosPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))
+                ))}
+              </>
             )}
           </>
         )}
