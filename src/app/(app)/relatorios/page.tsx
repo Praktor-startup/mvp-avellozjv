@@ -160,8 +160,9 @@ export default function RelatoriosPage() {
       const supabase = createClient()
 
       // RLS escopa automaticamente: gestor/técnico vê a loja toda, vendedor só o próprio.
+      // Só vendedor ativo entra no ranking — inativado/excluído sai das métricas por vendedor.
       const [sellersRes, entriesRes, closedRes, checksRes, remindersRes] = await Promise.all([
-        supabase.from('sellers').select('id, name').order('name'),
+        supabase.from('sellers').select('id, name').eq('active', true).order('name'),
         supabase
           .from('customer_services')
           .select('id, seller_id, entry_date, status:status_id(is_lost)')
