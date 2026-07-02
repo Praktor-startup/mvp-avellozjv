@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { format, parseISO, addDays } from 'date-fns'
+import { format, parseISO, addDays, startOfMonth, addMonths } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
 export function cn(...inputs: ClassValue[]) {
@@ -18,6 +18,18 @@ export function formatDate(date: string | null | undefined, pattern = 'dd/MM/yyy
 
 export function formatDateTime(date: string | null | undefined) {
   return formatDate(date, "dd/MM/yyyy 'às' HH:mm")
+}
+
+// Início (inclusive) e fim (exclusivo) do mês, em ISO — usar com .gte()/.lt() no Supabase.
+export function monthRange(year: number, month: number) {
+  const base = new Date(year, month - 1, 1)
+  const start = startOfMonth(base)
+  const end = addMonths(startOfMonth(base), 1)
+  return { start: start.toISOString(), end: end.toISOString() }
+}
+
+export function monthLabel(year: number, month: number) {
+  return format(new Date(year, month - 1, 1), "MMMM 'de' yyyy", { locale: ptBR })
 }
 
 export function maskCPF(cpf: string) {

@@ -107,6 +107,7 @@ export default function AtendimentoDetailPage() {
       loss_reason_id: kind === 'lost' ? (lossReasonId ?? null) : null,
       reminder_active: false,
       next_consultation_date: null,
+      closed_at: kind === 'closed' ? new Date().toISOString() : null,
     }).eq('id', id)
     await Promise.all([completeSaleFollowups(), completeReconsultations(), completePendingChecks()])
     await reload()
@@ -206,7 +207,7 @@ export default function AtendimentoDetailPage() {
     if (checkForm.result === 'approved') {
       if (checkForm.sale_outcome === 'closed') {
         const closed = statuses.find((s) => s.is_closed)
-        if (closed) await supabase.from('customer_services').update({ status_id: closed.id, loss_reason_id: null }).eq('id', id)
+        if (closed) await supabase.from('customer_services').update({ status_id: closed.id, loss_reason_id: null, closed_at: new Date().toISOString() }).eq('id', id)
         await completeSaleFollowups()
       } else if (checkForm.sale_outcome === 'lost') {
         const lost = statuses.find((s) => s.is_lost && !s.generates_reminder)

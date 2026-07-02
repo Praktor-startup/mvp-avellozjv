@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Bell, TrendingUp, ShoppingBag, XCircle, Users, CheckCircle, AlertTriangle, ArrowRight, Clock } from 'lucide-react'
-import { formatDate, maskCPF } from '@/lib/utils'
+import { formatDate, maskCPF, monthRange, monthLabel } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
@@ -58,10 +58,13 @@ export default function DashboardPage() {
   const [reminders, setReminders] = useState<UpcomingReminder[]>([])
   const [loading, setLoading] = useState(true)
 
+  const now = new Date()
+  const { start: monthStart, end: monthEnd } = monthRange(now.getFullYear(), now.getMonth() + 1)
+
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const [servicesRes, remindersRes, allRes, ccRes] = await Promise.all([
+      const [servicesRes, remindersRes, entriesRes, closedRes, ccRes] = await Promise.all([
         supabase
           .from('customer_services')
           .select('id, name, cpf, entry_date, status:status_id(description,is_closed,is_lost,generates_reminder), seller:seller_id(name)')
@@ -73,18 +76,31 @@ export default function DashboardPage() {
           .eq('status', 'pending')
           .order('due_date', { ascending: true })
           .limit(5),
+        // Entradas, atendimento e consultas pendentes: referentes ao mês corrente pela data de entrada
         supabase
           .from('customer_services')
-          .select('seller_id, reminder_active, statuses:status_id(is_closed,is_lost,generates_reminder,description)'),
-        supabase.from('credit_checks').select('id, result'),
+          .select('seller_id, reminder_active, statuses:status_id(is_closed,is_lost,generates_reminder,description)')
+          .gte('entry_date', monthStart)
+          .lt('entry_date', monthEnd),
+        // Vendas fechadas: referentes ao mês em que o fechamento aconteceu, não à entrada
+        supabase
+          .from('customer_services')
+          .select('id', { count: 'exact', head: true })
+          .gte('closed_at', monthStart)
+          .lt('closed_at', monthEnd),
+        supabase
+          .from('credit_checks')
+          .select('id, result')
+          .gte('check_date', monthStart)
+          .lt('check_date', monthEnd),
       ])
 
-      if (allRes.data) {
-        const data = allRes.data as any[]
+      if (entriesRes.data) {
+        const data = entriesRes.data as any[]
         setStats({
           total_entries: data.length,
           total_attended: data.filter((d) => d.seller_id).length,
-          total_closed: data.filter((d) => d.statuses?.is_closed).length,
+          total_closed: closedRes.count ?? 0,
           total_lost: data.filter((d) => d.statuses?.is_lost).length,
           total_pending_reminders: data.filter((d) => d.reminder_active).length,
           total_awaiting_sale: data.filter((d) => d.statuses?.description === 'Consulta aprovada').length,
@@ -99,9 +115,9 @@ export default function DashboardPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [monthStart, monthEnd])
 
-  const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const todayLabel = monthLabel(now.getFullYear(), now.getMonth() + 1)
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto bg-slate-50">
@@ -109,7 +125,7 @@ export default function DashboardPage() {
       {/* Header claro + métricas principais (Claude Design) */}
       <div className="px-5 py-6 sm:px-8 sm:py-7 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <p className="text-slate-400 text-xs font-medium capitalize mb-0.5">{today}</p>
+          <p className="text-slate-400 text-xs font-medium capitalize mb-0.5">{todayLabel}</p>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-6">Dashboard</h1>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
