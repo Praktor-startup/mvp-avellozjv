@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
 import { formatWhatsApp } from '@/lib/utils'
-import { Plus, Edit, Power, Phone } from 'lucide-react'
+import { Plus, Edit, Power, Phone, Trash2, AlertTriangle } from 'lucide-react'
 import type { Seller } from '@/types'
 
 export default function VendedoresPage() {
@@ -20,6 +20,9 @@ export default function VendedoresPage() {
   const [editing, setEditing] = useState<Seller | null>(null)
   const [form, setForm] = useState({ name: '', whatsapp: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [deleteTarget, setDeleteTarget] = useState<Seller | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   async function load() {
     const supabase = createClient()
@@ -58,6 +61,30 @@ export default function VendedoresPage() {
     setSellers((prev) => prev.map((x) => x.id === s.id ? { ...x, active: !x.active } : x))
   }
 
+  function openDelete(s: Seller) { setDeleteTarget(s); setDeleteError(''); setDeleting(false) }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    setDeleteError('')
+    const supabase = createClient()
+    const { error } = await supabase.from('sellers').delete().eq('id', deleteTarget.id)
+    if (error) {
+      // FK de customer_services/reminders para sellers não tem ON DELETE — vendedor com
+      // histórico de atendimento não pode ser apagado (perderia o dado ligado a ele).
+      setDeleteError(
+        error.code === '23503'
+          ? 'Esse vendedor já tem atendimentos ou lembretes vinculados — não dá pra excluir sem perder esse histórico. Desative em vez de excluir.'
+          : 'Não foi possível excluir. Tente novamente.'
+      )
+      setDeleting(false)
+      return
+    }
+    setSellers((prev) => prev.filter((x) => x.id !== deleteTarget.id))
+    setDeleteTarget(null)
+    setDeleting(false)
+  }
+
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <Header
@@ -92,6 +119,9 @@ export default function VendedoresPage() {
                     <Button variant="ghost" size="sm" onClick={() => toggleActive(s)}>
                       <Power className="h-3.5 w-3.5" />
                     </Button>
+                    <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => openDelete(s)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -109,6 +139,26 @@ export default function VendedoresPage() {
             <Button type="submit" loading={saving}>Salvar</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Excluir vendedor" size="sm">
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-slate-600">
+            Tem certeza que quer excluir <strong>{deleteTarget?.name}</strong>? Essa ação não pode ser desfeita.
+          </p>
+          {deleteError && (
+            <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">{deleteError}</p>
+            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
+            <Button type="button" variant="danger" loading={deleting} onClick={handleDelete}>
+              <Trash2 className="h-3.5 w-3.5" />Excluir
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   )
