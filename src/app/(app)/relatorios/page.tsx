@@ -8,7 +8,7 @@ import { Header } from '@/components/layout/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { Badge } from '@/components/ui/badge'
-import { SellerRankingChart, EvolutionChart } from '@/components/reports/monthly-charts'
+import { SellerRankingChart, EvolutionChart, MotosVendidasChart } from '@/components/reports/monthly-charts'
 import { cn, monthRange } from '@/lib/utils'
 import { Users, CheckCircle, ShoppingBag, TrendingDown, FileSearch, Bell } from 'lucide-react'
 
@@ -22,9 +22,22 @@ interface SellerStats {
   total_closed: number
   total_lost: number
   total_reminders: number
+  conversion_rate: number
 }
 
 type PresetKey = 'current_month' | 'last_30' | 'last_6_months' | 'custom'
+
+// Histórico informado manualmente pela loja — não vem do banco (por isso não muda
+// com os filtros de período acima) nem bate necessariamente com "vendas fechadas"
+// registradas no app, que só rastreia o fluxo de crédito de cada atendimento.
+const MOTOS_HISTORICO_2026 = [
+  { label: 'Jan/26', quantidade: 12 },
+  { label: 'Fev/26', quantidade: 20 },
+  { label: 'Mar/26', quantidade: 11 },
+  { label: 'Abr/26', quantidade: 10 },
+  { label: 'Mai/26', quantidade: 5 },
+  { label: 'Jun/26', quantidade: 18 },
+]
 
 const PRESETS: { key: PresetKey; label: string }[] = [
   { key: 'current_month', label: 'Este mês' },
@@ -33,9 +46,14 @@ const PRESETS: { key: PresetKey; label: string }[] = [
   { key: 'custom', label: 'Personalizado' },
 ]
 
+function pctNum(num: number, den: number) {
+  if (!den) return 0
+  return (num / den) * 100
+}
+
 function pct(num: number, den: number) {
   if (!den) return '—'
-  return `${Math.round((num / den) * 100)}%`
+  return `${Math.round(pctNum(num, den))}%`
 }
 
 function toDateInputValue(d: Date) {
@@ -183,9 +201,11 @@ export default function RelatoriosPage() {
             total_closed: sellerClosed.length,
             total_lost: sellerEntries.filter((e) => e.status?.is_lost).length,
             total_reminders: sellerReminders.length,
+            conversion_rate: pctNum(sellerClosed.length, sellerEntries.length),
           }
         })
-        .sort((a, b) => b.total_closed - a.total_closed)
+        // Ranking pela % de conversão (fechados / atendidos) do período filtrado, não pela contagem bruta.
+        .sort((a, b) => b.conversion_rate - a.conversion_rate)
 
       setStats(result)
       setTotals({
@@ -269,6 +289,13 @@ export default function RelatoriosPage() {
               <EvolutionChart data={dailyData} />
             </div>
 
+            <div>
+              <MotosVendidasChart data={MOTOS_HISTORICO_2026} />
+              <p className="text-xs text-slate-400 mt-2">
+                Histórico informado manualmente (janeiro a junho de 2026) — independente do filtro de período acima.
+              </p>
+            </div>
+
             {stats.length === 0 ? (
               <div className="text-center text-slate-400 py-12">Nenhum vendedor cadastrado</div>
             ) : (
@@ -285,6 +312,7 @@ export default function RelatoriosPage() {
                         <span className="text-sm font-bold text-brand-600">{i + 1}º</span>
                       </div>
                       <CardTitle>{s.name}</CardTitle>
+                      <Badge variant="secondary">{Math.round(s.conversion_rate)}% de conversão</Badge>
                       {s.total_reminders > 0 && (
                         <Badge variant="warning">
                           <Bell className="h-3 w-3" />
@@ -313,7 +341,7 @@ export default function RelatoriosPage() {
                       {[
                         { label: 'Taxa consulta', value: pct(s.total_consultations, s.total_attended) },
                         { label: 'Taxa aprovação', value: pct(s.total_approved, s.total_consultations) },
-                        { label: 'Taxa fechamento', value: pct(s.total_closed, s.total_attended) },
+                        { label: '% de conversão', value: pct(s.total_closed, s.total_attended) },
                         { label: 'Perda c/ restrição', value: pct(s.total_restriction, s.total_consultations) },
                       ].map((item) => (
                         <div key={item.label} className="px-4 py-3 rounded-xl bg-white border border-slate-100 text-center">

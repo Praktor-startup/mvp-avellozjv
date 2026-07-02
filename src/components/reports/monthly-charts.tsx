@@ -35,6 +35,11 @@ interface EvolutionPoint {
   fechamentos: number
 }
 
+interface MotosPoint {
+  label: string
+  quantidade: number
+}
+
 function EmptyChart({ label }: { label: string }) {
   return (
     <div className="h-56 flex items-center justify-center text-sm text-slate-400">{label}</div>
@@ -74,6 +79,29 @@ export function SellerRankingChart({ data }: { data: SellerRankItem[] }) {
             </BarChart>
           </ResponsiveContainer>
         )}
+      </CardContent>
+    </Card>
+  )
+}
+
+export function MotosVendidasChart({ data }: { data: MotosPoint[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Motos vendidas — histórico</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={data} margin={{ left: -16, right: 16, top: 8, bottom: 4 }}>
+            <CartesianGrid vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(value) => [`${value} moto${value === 1 ? '' : 's'}`, 'Vendidas']} />
+            <Bar dataKey="quantidade" fill={COLOR_RANKING} radius={[4, 4, 0, 0]} maxBarSize={48}>
+              <LabelList dataKey="quantidade" position="top" style={{ fontSize: 12, fill: '#475569', fontWeight: 600 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   )
