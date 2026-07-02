@@ -36,7 +36,7 @@ const nav: NavItem[] = [
   { label: 'Leads', href: '/leads', icon: Inbox, gestorOnly: true, tour: 'nav-leads' },
   { label: 'Captação (QR)', href: '/origens', icon: QrCode, gestorOnly: true, tour: 'nav-origens' },
   { divider: true },
-  { label: 'Relatórios Mensais', href: '/relatorios', icon: BarChart2 },
+  { label: 'Relatório', href: '/relatorios', icon: BarChart2 },
   { divider: true },
   { label: 'Equipe', href: '/equipe', icon: UserCog, gestorOnly: true, tour: 'nav-equipe' },
   { label: 'Vendedores', href: '/vendedores', icon: Users, gestorOnly: true, tour: 'nav-vendedores' },

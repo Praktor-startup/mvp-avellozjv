@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Bell, TrendingUp, ShoppingBag, XCircle, Users, CheckCircle, AlertTriangle, ArrowRight, Clock } from 'lucide-react'
+import { Bell, TrendingUp, ShoppingBag, XCircle, Users, CheckCircle, AlertTriangle, ArrowRight, Clock, Calendar } from 'lucide-react'
 import { formatDate, maskCPF, monthRange, monthLabel } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -117,7 +117,9 @@ export default function DashboardPage() {
     load()
   }, [monthStart, monthEnd])
 
-  const todayLabel = monthLabel(now.getFullYear(), now.getMonth() + 1)
+  const todayRaw = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const todayFull = todayRaw.charAt(0).toUpperCase() + todayRaw.slice(1)
+  const currentMonthLabel = monthLabel(now.getFullYear(), now.getMonth() + 1)
 
   return (
     <div className="flex flex-col flex-1 overflow-y-auto bg-slate-50">
@@ -125,8 +127,18 @@ export default function DashboardPage() {
       {/* Header claro + métricas principais (Claude Design) */}
       <div className="px-5 py-6 sm:px-8 sm:py-7 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <p className="text-slate-400 text-xs font-medium capitalize mb-0.5">{todayLabel}</p>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mb-6">Dashboard</h1>
+          <p className="text-slate-400 text-xs font-medium mb-0.5">{todayFull}</p>
+          <div className="flex flex-wrap items-center gap-2.5 mb-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">
+              <Calendar className="w-3 h-3" />
+              Referente a {currentMonthLabel}
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mb-6">
+            Os números abaixo mostram só {currentMonthLabel}. Para outros períodos, veja o{' '}
+            <Link href="/relatorios" className="text-brand-600 font-semibold hover:underline">Relatório</Link>.
+          </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {[

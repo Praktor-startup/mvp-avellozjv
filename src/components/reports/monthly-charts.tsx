@@ -29,8 +29,8 @@ interface SellerRankItem {
   total_closed: number
 }
 
-interface DailyPoint {
-  day: number
+interface EvolutionPoint {
+  label: string
   entradas: number
   fechamentos: number
 }
@@ -50,7 +50,7 @@ export function SellerRankingChart({ data }: { data: SellerRankItem[] }) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <EmptyChart label="Nenhuma venda fechada neste mês" />
+          <EmptyChart label="Nenhuma venda fechada neste período" />
         ) : (
           <ResponsiveContainer width="100%" height={Math.max(220, data.length * 44)}>
             <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
@@ -79,23 +79,25 @@ export function SellerRankingChart({ data }: { data: SellerRankItem[] }) {
   )
 }
 
-export function DailyEvolutionChart({ data }: { data: DailyPoint[] }) {
+export function EvolutionChart({ data }: { data: EvolutionPoint[] }) {
   const hasData = data.some((d) => d.entradas > 0 || d.fechamentos > 0)
+  // Mais de ~15 pontos (ex: período de 6 meses em dias) fica ilegível — pula rótulos do eixo.
+  const tickInterval = data.length > 15 ? Math.ceil(data.length / 10) : 0
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Evolução no mês</CardTitle>
+        <CardTitle>Evolução no período</CardTitle>
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <EmptyChart label="Nenhum dado neste mês" />
+          <EmptyChart label="Nenhum dado neste período" />
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={data} margin={{ left: -16, right: 16, top: 8, bottom: 4 }}>
               <CartesianGrid vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="label" interval={tickInterval} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip labelFormatter={(day) => `Dia ${day}`} />
+              <Tooltip />
               <Legend
                 verticalAlign="top"
                 align="right"
