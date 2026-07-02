@@ -8,7 +8,7 @@ import { Header } from '@/components/layout/header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { Badge } from '@/components/ui/badge'
-import { SellerRankingChart, EvolutionChart, MotosVendidasChart } from '@/components/reports/monthly-charts'
+import { SellerRankingChart, EvolutionChart } from '@/components/reports/monthly-charts'
 import { cn, monthRange } from '@/lib/utils'
 import { Users, CheckCircle, ShoppingBag, TrendingDown, FileSearch, Bell } from 'lucide-react'
 
@@ -27,17 +27,17 @@ interface SellerStats {
 
 type PresetKey = 'current_month' | 'last_30' | 'last_6_months' | 'custom'
 
-// Histórico informado manualmente pela loja — não vem do banco (por isso não muda
-// com os filtros de período acima) nem bate necessariamente com "vendas fechadas"
-// registradas no app, que só rastreia o fluxo de crédito de cada atendimento.
-const MOTOS_HISTORICO_2026 = [
-  { label: 'Jan/26', quantidade: 12 },
-  { label: 'Fev/26', quantidade: 20 },
-  { label: 'Mar/26', quantidade: 11 },
-  { label: 'Abr/26', quantidade: 10 },
-  { label: 'Mai/26', quantidade: 5 },
-  { label: 'Jun/26', quantidade: 18 },
-]
+// Motos vendidas informadas manualmente pela loja — não vem do banco (a loja rastreia
+// isso por fora do fluxo de crédito do app), só existe granularidade mensal. Só entra
+// na Evolução no período quando o gráfico está agrupado por mês (períodos longos).
+const MOTOS_POR_MES_2026: Record<string, number> = {
+  '2026-0': 12, // Jan
+  '2026-1': 20, // Fev
+  '2026-2': 11, // Mar
+  '2026-3': 10, // Abr
+  '2026-4': 5, // Mai
+  '2026-5': 18, // Jun
+}
 
 const PRESETS: { key: PresetKey; label: string }[] = [
   { key: 'current_month', label: 'Este mês' },
@@ -118,14 +118,16 @@ function buildBuckets(startISO: string, endISO: string) {
     return { buckets, keyOf: (iso: string) => iso.slice(0, 10) }
   }
 
-  const buckets: { key: string; label: string; entradas: number; fechamentos: number }[] = []
+  const buckets: { key: string; label: string; entradas: number; fechamentos: number; motos?: number }[] = []
   const cursor = new Date(start.getFullYear(), start.getMonth(), 1)
   while (cursor < end) {
+    const key = `${cursor.getFullYear()}-${cursor.getMonth()}`
     buckets.push({
-      key: `${cursor.getFullYear()}-${cursor.getMonth()}`,
+      key,
       label: format(cursor, 'MMM/yy', { locale: ptBR }),
       entradas: 0,
       fechamentos: 0,
+      motos: MOTOS_POR_MES_2026[key],
     })
     cursor.setMonth(cursor.getMonth() + 1)
   }
@@ -144,7 +146,7 @@ export default function RelatoriosPage() {
   const [customEnd, setCustomEnd] = useState(toDateInputValue(new Date()))
   const [stats, setStats] = useState<SellerStats[]>([])
   const [totals, setTotals] = useState({ entries: 0, closed: 0, approved: 0 })
-  const [dailyData, setDailyData] = useState<{ label: string; entradas: number; fechamentos: number }[]>([])
+  const [dailyData, setDailyData] = useState<{ label: string; entradas: number; fechamentos: number; motos?: number }[]>([])
   const [loading, setLoading] = useState(true)
 
   const { start: rangeStart, end: rangeEnd } = useMemo(
@@ -287,13 +289,6 @@ export default function RelatoriosPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <SellerRankingChart data={stats.map((s) => ({ name: s.name, total_closed: s.total_closed }))} />
               <EvolutionChart data={dailyData} />
-            </div>
-
-            <div>
-              <MotosVendidasChart data={MOTOS_HISTORICO_2026} />
-              <p className="text-xs text-slate-400 mt-2">
-                Histórico informado manualmente (janeiro a junho de 2026) — independente do filtro de período acima.
-              </p>
             </div>
 
             {stats.length === 0 ? (

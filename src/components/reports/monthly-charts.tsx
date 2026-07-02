@@ -23,6 +23,7 @@ import {
 const COLOR_ENTRADAS = '#3A44A8'
 const COLOR_FECHAMENTOS = '#16A34A'
 const COLOR_RANKING = '#F26B21'
+const COLOR_MOTOS = COLOR_RANKING
 
 interface SellerRankItem {
   name: string
@@ -33,11 +34,7 @@ interface EvolutionPoint {
   label: string
   entradas: number
   fechamentos: number
-}
-
-interface MotosPoint {
-  label: string
-  quantidade: number
+  motos?: number
 }
 
 function EmptyChart({ label }: { label: string }) {
@@ -84,31 +81,9 @@ export function SellerRankingChart({ data }: { data: SellerRankItem[] }) {
   )
 }
 
-export function MotosVendidasChart({ data }: { data: MotosPoint[] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Motos vendidas — histórico</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={data} margin={{ left: -16, right: 16, top: 8, bottom: 4 }}>
-            <CartesianGrid vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <Tooltip cursor={{ fill: '#f8fafc' }} formatter={(value) => [`${value} moto${value === 1 ? '' : 's'}`, 'Vendidas']} />
-            <Bar dataKey="quantidade" fill={COLOR_RANKING} radius={[4, 4, 0, 0]} maxBarSize={48}>
-              <LabelList dataKey="quantidade" position="top" style={{ fontSize: 12, fill: '#475569', fontWeight: 600 }} />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  )
-}
-
 export function EvolutionChart({ data }: { data: EvolutionPoint[] }) {
-  const hasData = data.some((d) => d.entradas > 0 || d.fechamentos > 0)
+  const hasMotos = data.some((d) => d.motos !== undefined)
+  const hasData = data.some((d) => d.entradas > 0 || d.fechamentos > 0 || (d.motos ?? 0) > 0)
   // Mais de ~15 pontos (ex: período de 6 meses em dias) fica ilegível — pula rótulos do eixo.
   const tickInterval = data.length > 15 ? Math.ceil(data.length / 10) : 0
   return (
@@ -120,23 +95,33 @@ export function EvolutionChart({ data }: { data: EvolutionPoint[] }) {
         {!hasData ? (
           <EmptyChart label="Nenhum dado neste período" />
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={data} margin={{ left: -16, right: 16, top: 8, bottom: 4 }}>
-              <CartesianGrid vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="label" interval={tickInterval} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <Tooltip />
-              <Legend
-                verticalAlign="top"
-                align="right"
-                height={32}
-                iconType="circle"
-                formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
-              />
-              <Line type="monotone" dataKey="entradas" name="Entradas na loja" stroke={COLOR_ENTRADAS} strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="fechamentos" name="Vendas fechadas" stroke={COLOR_FECHAMENTOS} strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+          <>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={data} margin={{ left: -16, right: 16, top: 8, bottom: 4 }}>
+                <CartesianGrid vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="label" interval={tickInterval} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Legend
+                  verticalAlign="top"
+                  align="right"
+                  height={32}
+                  iconType="circle"
+                  formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
+                />
+                <Line type="monotone" dataKey="entradas" name="Entradas na loja" stroke={COLOR_ENTRADAS} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="fechamentos" name="Vendas fechadas" stroke={COLOR_FECHAMENTOS} strokeWidth={2} dot={false} />
+                {hasMotos && (
+                  <Line type="monotone" dataKey="motos" name="Motos vendidas" stroke={COLOR_MOTOS} strokeWidth={2} dot={{ r: 3 }} connectNulls />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
+            {hasMotos && (
+              <p className="text-xs text-slate-400 mt-2">
+                Motos vendidas: histórico informado manualmente pela loja (só disponível de jan a jun/2026).
+              </p>
+            )}
+          </>
         )}
       </CardContent>
     </Card>
