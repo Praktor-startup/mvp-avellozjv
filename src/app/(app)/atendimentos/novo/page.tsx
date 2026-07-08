@@ -208,6 +208,12 @@ export default function NovoAtendimentoPage() {
     // evita o "phantom save" (grava no banco mas mostra erro pro usuário).
     const serviceId = crypto.randomUUID()
 
+    // Qualquer caminho cujo status final resolvido seja "fechado" (is_closed) precisa
+    // gravar closed_at — inclusive quando o usuário seleciona "Venda fechada" direto
+    // no dropdown de status, sem passar pelo fluxo de "Consulta aprovada".
+    const finalStatus = statuses.find((s) => s.id === finalStatusId)
+    const closedAt = finalStatus?.is_closed ? new Date().toISOString() : null
+
     const { error } = await supabase
       .from('customer_services')
       .insert({
@@ -223,6 +229,7 @@ export default function NovoAtendimentoPage() {
         notes: form.notes || null,
         reminder_active: !!nextDate,
         next_consultation_date: nextDate,
+        closed_at: closedAt,
       })
 
     if (error) {
