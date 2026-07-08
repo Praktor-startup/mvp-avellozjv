@@ -34,6 +34,10 @@ export default function NovoAtendimentoPage() {
   // Quando o usuário logado é vendedor, ele só registra atendimentos para si mesmo:
   // o vendedor responsável é fixado no cadastro dele (não pode escolher outro).
   const [lockedSeller, setLockedSeller] = useState<Seller | null>(null)
+  // Vendedor logado tem cadastro, mas está desativado — bloqueia o envio em vez de
+  // deixar o campo aberto para escolher outro vendedor (o que gerava atendimento
+  // atribuído à pessoa errada).
+  const [ownSellerInactive, setOwnSellerInactive] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -74,13 +78,28 @@ export default function NovoAtendimentoPage() {
       setMotos((m.data ?? []) as MotorcycleType[])
       setLossReasons((lr.data ?? []) as LossReason[])
 
-      // Vendedor: fixa o responsável no próprio cadastro
+      // Vendedor: fixa o responsável no próprio cadastro.
+      // Busca o próprio seller SEM o filtro active=true: se o cadastro dele estiver
+      // inativo, `own` ainda é encontrado aqui (mesmo não estando na lista `sellers`
+      // usada pelo <Select>), permitindo travar o formulário com uma mensagem clara
+      // em vez de deixar o campo aberto para escolher outro vendedor.
       if (roleRes.data === 'vendedor') {
         const uid = userRes.data.user?.id
         const own = sellerList.find((x) => x.user_id === uid)
         if (own) {
           setLockedSeller(own)
           setForm((f) => ({ ...f, seller_id: own.id }))
+        } else if (uid) {
+          const ownAny = await supabase.from('sellers').select('*').eq('user_id', uid).maybeSingle()
+          if (ownAny.data) {
+            const ownSeller = ownAny.data as Seller
+            setLockedSeller(ownSeller)
+            if (ownSeller.active) {
+              setForm((f) => ({ ...f, seller_id: ownSeller.id }))
+            } else {
+              setOwnSellerInactive(true)
+            }
+          }
         }
       }
     }
@@ -154,6 +173,10 @@ export default function NovoAtendimentoPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (ownSellerInactive) {
+      setErrors({ _: 'Seu cadastro de vendedor está inativo. Contate o gestor da loja.' })
+      return
+    }
     const errs = validate()
     if (Object.keys(errs).length) { setErrors(errs); return }
 
@@ -179,9 +202,16 @@ export default function NovoAtendimentoPage() {
       // 'pending' mantém "Consulta aprovada" como estado de aguardando fechamento
     }
 
-    const { data: service, error } = await supabase
+    // Gera o id no client em vez de depender do reread pós-insert (.select().single()):
+    // se a policy de SELECT não reconhecer a linha recém-gravada por qualquer descompasso
+    // de RLS, o insert já foi bem-sucedido e o fluxo segue normalmente com esse id —
+    // evita o "phantom save" (grava no banco mas mostra erro pro usuário).
+    const serviceId = crypto.randomUUID()
+
+    const { error } = await supabase
       .from('customer_services')
       .insert({
+        id: serviceId,
         name: form.name.trim(),
         cpf: form.cpf.replace(/\D/g, ''),
         phone: form.phone.replace(/\D/g, '') || null,
@@ -194,10 +224,9 @@ export default function NovoAtendimentoPage() {
         reminder_active: !!nextDate,
         next_consultation_date: nextDate,
       })
-      .select()
-      .single()
 
-    if (error || !service) {
+    if (error) {
+      console.error('Erro ao salvar atendimento:', error)
       setErrors({ _: 'Erro ao salvar atendimento. Tente novamente.' })
       setLoading(false)
       return
@@ -206,7 +235,7 @@ export default function NovoAtendimentoPage() {
     // Consulta de crédito (restrição/negado) + lembrete de reconsulta
     if (requiresCredit && form.check_date && form.check_result) {
       await supabase.from('credit_checks').insert({
-        customer_service_id: service.id,
+        customer_service_id: serviceId,
         check_date: form.check_date,
         result: form.check_result,
         notes: form.check_notes || null,
@@ -215,7 +244,7 @@ export default function NovoAtendimentoPage() {
 
       if (generatesReminder && nextDate) {
         await supabase.from('reminders').insert({
-          customer_service_id: service.id,
+          customer_service_id: serviceId,
           seller_id: form.seller_id || null,
           due_date: nextDate,
           type: 'reconsultation',
@@ -228,7 +257,7 @@ export default function NovoAtendimentoPage() {
     // cria lembrete de cobrança de fechamento (o lead mais quente).
     if (requiresSaleFollowup) {
       await supabase.from('credit_checks').insert({
-        customer_service_id: service.id,
+        customer_service_id: serviceId,
         check_date: form.approval_date,
         result: 'approved',
         notes: form.check_notes || null,
@@ -238,7 +267,7 @@ export default function NovoAtendimentoPage() {
         const followupDate = saleFollowupDate(form.approval_date)
         if (followupDate) {
           await supabase.from('reminders').insert({
-            customer_service_id: service.id,
+            customer_service_id: serviceId,
             seller_id: form.seller_id || null,
             due_date: followupDate,
             type: 'sale_followup',
@@ -248,7 +277,7 @@ export default function NovoAtendimentoPage() {
       }
     }
 
-    router.push(`/atendimentos/${service.id}`)
+    router.push(`/atendimentos/${serviceId}`)
   }
 
   return (
@@ -269,6 +298,15 @@ export default function NovoAtendimentoPage() {
             <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
               <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
               <p className="text-sm text-red-700">{errors._}</p>
+            </div>
+          )}
+
+          {ownSellerInactive && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+              <p className="text-sm text-red-700">
+                Seu cadastro de vendedor está inativo. Contate o gestor da loja para reativá-lo antes de registrar atendimentos.
+              </p>
             </div>
           )}
 
@@ -360,7 +398,7 @@ export default function NovoAtendimentoPage() {
                     value={lockedSeller.name}
                     readOnly
                     disabled
-                    hint="Você é o responsável por este atendimento"
+                    hint={ownSellerInactive ? 'Cadastro inativo — contate o gestor da loja' : 'Você é o responsável por este atendimento'}
                   />
                 ) : (
                   <Select
@@ -525,7 +563,7 @@ export default function NovoAtendimentoPage() {
 
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => router.back()}>Cancelar</Button>
-            <Button type="submit" loading={loading}>Salvar atendimento</Button>
+            <Button type="submit" loading={loading} disabled={ownSellerInactive}>Salvar atendimento</Button>
           </div>
         </form>
       </div>
