@@ -20,6 +20,7 @@ import {
   QrCode,
   Inbox,
   UserCog,
+  Megaphone,
 } from 'lucide-react'
 
 type NavItem =
@@ -43,6 +44,7 @@ const nav: NavItem[] = [
   { label: 'Tipos de Moto', href: '/motos', icon: Bike, gestorOnly: true },
   { label: 'Status', href: '/status', icon: Tag, gestorOnly: true },
   { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle, gestorOnly: true },
+  { label: 'Canal de Origem', href: '/canais', icon: Megaphone, gestorOnly: true },
 ]
 
 interface SidebarProps {

@@ -22,7 +22,7 @@ import {
 import Link from 'next/link'
 import type { CustomerService, CreditCheck, Status, LossReason } from '@/types'
 
-const SERVICE_SELECT = `*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*)`
+const SERVICE_SELECT = `*, seller:seller_id(*), motorcycle_type:motorcycle_type_id(*), status:status_id(*), loss_reason:loss_reason_id(*), channel:channel_id(*)`
 
 export default function AtendimentoDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -339,6 +339,7 @@ export default function AtendimentoDetailPage() {
                     { label: 'Vendedor', value: service.seller?.name ?? '—' },
                     { label: 'Moto de interesse', value: service.motorcycle_type?.model ?? '—' },
                     { label: 'Motivo da perda', value: service.loss_reason?.description ?? '—' },
+                    { label: 'Canal de origem', value: service.channel?.description ?? '—' },
                   ].map((item) => (
                     <div key={item.label}>
                       <dt className="text-xs font-medium text-slate-500 uppercase tracking-wide">{item.label}</dt>

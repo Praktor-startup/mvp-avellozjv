@@ -36,6 +36,13 @@ export interface LossReason {
   created_at: string
 }
 
+export interface CustomerChannel {
+  id: string
+  description: string
+  active: boolean
+  created_at: string
+}
+
 export interface CustomerService {
   id: string
   name: string
@@ -46,6 +53,7 @@ export interface CustomerService {
   motorcycle_type_id: string | null
   status_id: string | null
   loss_reason_id: string | null
+  channel_id: string | null
   notes: string | null
   reminder_active: boolean
   next_consultation_date: string | null
@@ -56,6 +64,7 @@ export interface CustomerService {
   motorcycle_type?: MotorcycleType
   status?: Status
   loss_reason?: LossReason
+  channel?: CustomerChannel
   credit_checks?: CreditCheck[]
 }
 

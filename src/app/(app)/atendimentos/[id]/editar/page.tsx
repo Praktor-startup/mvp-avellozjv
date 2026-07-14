@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCPF, formatPhone } from '@/lib/utils'
 import { ArrowLeft, AlertTriangle } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
-import type { Seller, Status, MotorcycleType, LossReason } from '@/types'
+import type { Seller, Status, MotorcycleType, LossReason, CustomerChannel } from '@/types'
 
 const REQUIRES_LOSS_REASON = ['Venda perdida']
 
@@ -25,23 +25,25 @@ export default function EditarAtendimentoPage() {
   const [statuses, setStatuses] = useState<Status[]>([])
   const [motos, setMotos] = useState<MotorcycleType[]>([])
   const [lossReasons, setLossReasons] = useState<LossReason[]>([])
+  const [channels, setChannels] = useState<CustomerChannel[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [originalStatus, setOriginalStatus] = useState<string>('')
 
   const [form, setForm] = useState({
     name: '', cpf: '', phone: '', entry_date: '', seller_id: '',
-    motorcycle_type_id: '', status_id: '', loss_reason_id: '', notes: '',
+    motorcycle_type_id: '', status_id: '', loss_reason_id: '', channel_id: '', notes: '',
   })
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const [svc, s, st, m, lr] = await Promise.all([
+      const [svc, s, st, m, lr, ch] = await Promise.all([
         supabase.from('customer_services').select('*').eq('id', id).single(),
         supabase.from('sellers').select('*').eq('active', true).order('name'),
         supabase.from('statuses').select('*').eq('active', true).order('sort_order'),
         supabase.from('motorcycle_types').select('*').eq('active', true).order('model'),
         supabase.from('loss_reasons').select('*').eq('active', true).order('description'),
+        supabase.from('customer_channels').select('*').eq('active', true).order('description'),
       ])
       if (svc.data) {
         const d = svc.data as any
@@ -63,6 +65,7 @@ export default function EditarAtendimentoPage() {
           motorcycle_type_id: d.motorcycle_type_id ?? '',
           status_id: d.status_id ?? '',
           loss_reason_id: d.loss_reason_id ?? '',
+          channel_id: d.channel_id ?? '',
           notes: d.notes ?? '',
         })
         setOriginalStatus(d.status_id ?? '')
@@ -71,6 +74,7 @@ export default function EditarAtendimentoPage() {
       setStatuses((st.data ?? []) as Status[])
       setMotos((m.data ?? []) as MotorcycleType[])
       setLossReasons((lr.data ?? []) as LossReason[])
+      setChannels((ch.data ?? []) as CustomerChannel[])
       setFetching(false)
     }
     load()
@@ -107,6 +111,7 @@ export default function EditarAtendimentoPage() {
       motorcycle_type_id: form.motorcycle_type_id || null,
       status_id: form.status_id || null,
       loss_reason_id: requiresLoss ? (form.loss_reason_id || null) : null,
+      channel_id: form.channel_id || null,
       notes: form.notes || null,
     }).eq('id', id)
 
@@ -192,6 +197,8 @@ export default function EditarAtendimentoPage() {
                 <Select label="Motivo da perda" required value={form.loss_reason_id} onChange={(e) => set('loss_reason_id', e.target.value)}
                   placeholder="Selecione" options={lossReasons.map((l) => ({ value: l.id, label: l.description }))} error={errors.loss_reason_id} />
               )}
+              <Select label="Como o cliente chegou até você?" value={form.channel_id} onChange={(e) => set('channel_id', e.target.value)}
+                placeholder="Selecione o canal" options={channels.map((c) => ({ value: c.id, label: c.description }))} />
               <Textarea label="Observações" value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Informações adicionais..." />
             </CardContent>
           </Card>

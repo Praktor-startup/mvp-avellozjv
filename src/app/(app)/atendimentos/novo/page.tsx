@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCPF, formatWhatsApp, nextConsultationDate, saleFollowupDate, validateCPF } from '@/lib/utils'
 import { ArrowLeft, AlertTriangle, CheckCircle2, Bell, UserCheck } from 'lucide-react'
-import type { Seller, Status, MotorcycleType, LossReason } from '@/types'
+import type { Seller, Status, MotorcycleType, LossReason, CustomerChannel } from '@/types'
 
 const REQUIRES_CREDIT_STATUSES = ['Consulta com restrição', 'Financiamento negado']
 const REQUIRES_SALE_FOLLOWUP = ['Consulta aprovada']
@@ -27,6 +27,7 @@ export default function NovoAtendimentoPage() {
   const [statuses, setStatuses] = useState<Status[]>([])
   const [motos, setMotos] = useState<MotorcycleType[]>([])
   const [lossReasons, setLossReasons] = useState<LossReason[]>([])
+  const [channels, setChannels] = useState<CustomerChannel[]>([])
   const [cpfWarning, setCpfWarning] = useState<string | null>(null)
   const [existingId, setExistingId] = useState<string | null>(null)
   const [existingClient, setExistingClient] = useState<{ name: string; phone: string | null } | null>(null)
@@ -48,6 +49,7 @@ export default function NovoAtendimentoPage() {
     motorcycle_type_id: '',
     status_id: '',
     loss_reason_id: '',
+    channel_id: '',
     notes: '',
     // consulta de crédito (restrição/negado)
     check_date: '',
@@ -64,11 +66,12 @@ export default function NovoAtendimentoPage() {
   useEffect(() => {
     async function loadMeta() {
       const supabase = createClient()
-      const [s, st, m, lr, roleRes, userRes] = await Promise.all([
+      const [s, st, m, lr, ch, roleRes, userRes] = await Promise.all([
         supabase.from('sellers').select('*').eq('active', true).order('name'),
         supabase.from('statuses').select('*').eq('active', true).order('sort_order'),
         supabase.from('motorcycle_types').select('*').eq('active', true).order('model'),
         supabase.from('loss_reasons').select('*').eq('active', true).order('description'),
+        supabase.from('customer_channels').select('*').eq('active', true).order('description'),
         supabase.rpc('my_role'),
         supabase.auth.getUser(),
       ])
@@ -77,6 +80,7 @@ export default function NovoAtendimentoPage() {
       setStatuses((st.data ?? []) as Status[])
       setMotos((m.data ?? []) as MotorcycleType[])
       setLossReasons((lr.data ?? []) as LossReason[])
+      setChannels((ch.data ?? []) as CustomerChannel[])
 
       // Vendedor: fixa o responsável no próprio cadastro.
       // Busca o próprio seller SEM o filtro active=true: se o cadastro dele estiver
@@ -226,6 +230,7 @@ export default function NovoAtendimentoPage() {
         motorcycle_type_id: form.motorcycle_type_id || null,
         status_id: finalStatusId || null,
         loss_reason_id: finalLossReasonId,
+        channel_id: form.channel_id || null,
         notes: form.notes || null,
         reminder_active: !!nextDate,
         next_consultation_date: nextDate,
@@ -447,6 +452,13 @@ export default function NovoAtendimentoPage() {
                     error={errors.loss_reason_id}
                   />
                 )}
+                <Select
+                  label="Como o cliente chegou até você?"
+                  value={form.channel_id}
+                  onChange={(e) => set('channel_id', e.target.value)}
+                  placeholder="Selecione o canal"
+                  options={channels.map((c) => ({ value: c.id, label: c.description }))}
+                />
               </div>
               <Textarea
                 label="Observações"
