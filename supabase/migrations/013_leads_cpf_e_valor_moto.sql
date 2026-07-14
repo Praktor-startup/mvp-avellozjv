@@ -9,7 +9,12 @@
 -- (2) motorcycle_types ganha `price` (valor de consulta/financiamento da
 --     moto), editável em /motos. Opcional — não afeta atendimentos existentes.
 --
+-- Só ADD COLUMN (nullable) e troca de definição de função — nenhum DROP
+-- TABLE/DELETE/TRUNCATE. Envolvida em transação: se qualquer statement
+-- falhar, tudo é desfeito e o banco volta exatamente como estava.
 -- Idempotente.
+
+begin;
 
 alter table avelloz.leads add column if not exists cpf text;
 alter table avelloz.motorcycle_types add column if not exists price numeric(10,2);
@@ -68,3 +73,5 @@ grant execute on function avelloz.convert_lead(uuid) to authenticated, service_r
 
 -- PostgREST self-hosted: refletir a nova assinatura de submit_lead no cache do schema.
 notify pgrst, 'reload schema';
+
+commit;
