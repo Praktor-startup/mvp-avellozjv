@@ -3,12 +3,12 @@ import type { Metadata } from 'next'
 import LojaClient from './loja-client'
 
 export const metadata: Metadata = {
-  title: 'Avelloz Motos Torre — João Pessoa | Sua moto 0km com financiamento facilitado',
+  title: 'Grupo Sempre Motos — Bayeux, PB | Sua moto 0km com financiamento facilitado',
   description:
-    'Conheça as motos Avelloz na loja Torre, em João Pessoa. AZ160, AZ125 e AZ100 com injeção eletrônica, partida elétrica e financiamento facilitado. Fale com a gente agora.',
+    'Conheça as motos Avelloz no Grupo Sempre Motos, em Bayeux — PB. AZ160, AZ125 e AZ100 com injeção eletrônica, partida elétrica e financiamento facilitado. Fale com a gente agora.',
   openGraph: {
-    title: 'Avelloz Motos Torre — João Pessoa',
-    description: 'Sua moto 0km com financiamento facilitado em João Pessoa.',
+    title: 'Grupo Sempre Motos — Bayeux, PB',
+    description: 'Sua moto 0km com financiamento facilitado em Bayeux — PB.',
     images: ['/motos/az160.jpeg'],
     type: 'website',
   },

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
 import { createClient } from '@/lib/supabase/client'
 import { Header } from '@/components/layout/header'
@@ -10,7 +11,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
-import { Plus, QrCode, ScanLine, Users, Download, Copy, Check, Power } from 'lucide-react'
+import { formatWhatsApp } from '@/lib/utils'
+import {
+  Plus, QrCode, ScanLine, Users, Download, Copy, Check, Power,
+  Bike, ChevronDown, ChevronUp, ArrowRight,
+} from 'lucide-react'
 
 interface Source {
   id: string
@@ -19,6 +24,25 @@ interface Source {
   kind: string
   description: string | null
   active: boolean
+}
+
+type LeadStatus = 'novo' | 'contatado' | 'convertido' | 'descartado'
+
+interface SourceLead {
+  id: string
+  name: string
+  phone: string
+  status: LeadStatus
+  source_id: string | null
+  converted_service_id: string | null
+  service: { status: { description: string; is_closed: boolean } | null } | null
+}
+
+const LEAD_STATUS_META: Record<LeadStatus, { label: string; variant: 'default' | 'success' | 'warning' | 'secondary' | 'danger' }> = {
+  novo: { label: 'Novo', variant: 'warning' },
+  contatado: { label: 'Contatado', variant: 'default' },
+  convertido: { label: 'Convertido', variant: 'success' },
+  descartado: { label: 'Descartado', variant: 'secondary' },
 }
 
 function slugify(s: string) {
@@ -31,9 +55,13 @@ function slugify(s: string) {
 }
 
 export default function OrigensPage() {
+  const router = useRouter()
   const [sources, setSources] = useState<Source[]>([])
   const [scanCount, setScanCount] = useState<Record<string, number>>({})
   const [leadCount, setLeadCount] = useState<Record<string, number>>({})
+  const [salesCount, setSalesCount] = useState<Record<string, number>>({})
+  const [leadsBySource, setLeadsBySource] = useState<Record<string, SourceLead[]>>({})
+  const [expanded, setExpanded] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -50,15 +78,29 @@ export default function OrigensPage() {
     const [srcRes, scansRes, leadsRes] = await Promise.all([
       supabase.from('lead_sources').select('*').order('created_at', { ascending: false }),
       supabase.from('scans').select('source_id'),
-      supabase.from('leads').select('source_id'),
+      supabase
+        .from('leads')
+        .select('id, name, phone, status, source_id, converted_service_id, service:converted_service_id(status:status_id(description, is_closed))')
+        .order('created_at', { ascending: false }),
     ])
     setSources((srcRes.data ?? []) as Source[])
     const sc: Record<string, number> = {}
     ;(scansRes.data ?? []).forEach((r: { source_id: string }) => { sc[r.source_id] = (sc[r.source_id] ?? 0) + 1 })
     setScanCount(sc)
+
+    const leadsData = (leadsRes.data ?? []) as unknown as SourceLead[]
     const lc: Record<string, number> = {}
-    ;(leadsRes.data ?? []).forEach((r: { source_id: string | null }) => { if (r.source_id) lc[r.source_id] = (lc[r.source_id] ?? 0) + 1 })
+    const lbs: Record<string, SourceLead[]> = {}
+    const sales: Record<string, number> = {}
+    leadsData.forEach((l) => {
+      if (!l.source_id) return
+      lc[l.source_id] = (lc[l.source_id] ?? 0) + 1
+      ;(lbs[l.source_id] ??= []).push(l)
+      if (l.service?.status?.is_closed) sales[l.source_id] = (sales[l.source_id] ?? 0) + 1
+    })
     setLeadCount(lc)
+    setLeadsBySource(lbs)
+    setSalesCount(sales)
     setLoading(false)
   }, [])
 
@@ -150,7 +192,7 @@ export default function OrigensPage() {
     <div className="flex flex-col flex-1 overflow-hidden">
       <Header
         title="Captação por QR Code"
-        subtitle="Crie um QR para cada ponto e descubra de onde vêm seus clientes"
+        subtitle="Crie um QR para cada indicador e acompanhe quem vendeu por indicação"
         actions={<Button size="sm" onClick={openAdd}><Plus className="h-4 w-4" />Nova origem</Button>}
       />
       <div className="flex-1 overflow-y-auto p-6">
@@ -180,7 +222,7 @@ export default function OrigensPage() {
                   <p className="text-xs text-slate-400 mt-0.5 font-mono">{s.code}</p>
                   {s.description && <p className="text-sm text-slate-500 mt-1.5">{s.description}</p>}
 
-                  <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="grid grid-cols-3 gap-2 mt-4">
                     <div className="rounded-lg bg-slate-50 p-2.5 text-center">
                       <div className="flex items-center justify-center gap-1 text-slate-400"><ScanLine className="h-3.5 w-3.5" /></div>
                       <p className="text-lg font-black text-slate-900 tabular-nums">{scanCount[s.id] ?? 0}</p>
@@ -190,6 +232,11 @@ export default function OrigensPage() {
                       <div className="flex items-center justify-center gap-1 text-slate-400"><Users className="h-3.5 w-3.5" /></div>
                       <p className="text-lg font-black text-slate-900 tabular-nums">{leadCount[s.id] ?? 0}</p>
                       <p className="text-[10px] text-slate-400">leads</p>
+                    </div>
+                    <div className="rounded-lg bg-orange-50 p-2.5 text-center">
+                      <div className="flex items-center justify-center gap-1 text-orange-400"><Bike className="h-3.5 w-3.5" /></div>
+                      <p className="text-lg font-black text-orange-600 tabular-nums">{salesCount[s.id] ?? 0}</p>
+                      <p className="text-[10px] text-orange-400">vendas</p>
                     </div>
                   </div>
 
@@ -206,6 +253,45 @@ export default function OrigensPage() {
                       </Button>
                     )}
                   </div>
+
+                  {(leadCount[s.id] ?? 0) > 0 && (
+                    <button
+                      onClick={() => setExpanded((cur) => (cur === s.id ? null : s.id))}
+                      className="flex items-center justify-center gap-1.5 w-full mt-3 text-xs font-medium text-slate-500 hover:text-slate-700"
+                    >
+                      {expanded === s.id ? <><ChevronUp className="h-3.5 w-3.5" />Ocultar leads</> : <><ChevronDown className="h-3.5 w-3.5" />Ver leads ({leadCount[s.id] ?? 0})</>}
+                    </button>
+                  )}
+
+                  {expanded === s.id && (
+                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                      {(leadsBySource[s.id] ?? []).map((lead) => {
+                        const meta = LEAD_STATUS_META[lead.status]
+                        const soldStatus = lead.service?.status
+                        return (
+                          <button
+                            key={lead.id}
+                            onClick={() => lead.converted_service_id && router.push(`/atendimentos/${lead.converted_service_id}`)}
+                            disabled={!lead.converted_service_id}
+                            className="w-full flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 disabled:hover:bg-slate-50 disabled:cursor-default text-left transition-colors"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-slate-800 truncate">{lead.name}</p>
+                              <p className="text-xs text-slate-400">{formatWhatsApp(lead.phone)}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {soldStatus ? (
+                                <Badge variant={soldStatus.is_closed ? 'success' : 'default'}>{soldStatus.description}</Badge>
+                              ) : (
+                                <Badge variant={meta.variant}>{meta.label}</Badge>
+                              )}
+                              {lead.converted_service_id && <ArrowRight className="h-3.5 w-3.5 text-slate-400" />}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}

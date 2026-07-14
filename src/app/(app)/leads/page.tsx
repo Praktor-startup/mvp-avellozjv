@@ -7,8 +7,8 @@ import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatWhatsApp, formatDate } from '@/lib/utils'
-import { Phone, MapPin, ArrowRight, Inbox, MessageSquare, Check } from 'lucide-react'
+import { formatWhatsApp, formatDate, formatCPF } from '@/lib/utils'
+import { Phone, MapPin, ArrowRight, Inbox, MessageSquare, Check, UserPlus } from 'lucide-react'
 
 type LeadStatus = 'novo' | 'contatado' | 'convertido' | 'descartado'
 
@@ -16,12 +16,13 @@ interface Lead {
   id: string
   name: string
   phone: string
+  cpf: string | null
   interest: string | null
   message: string | null
   status: LeadStatus
   created_at: string
   converted_service_id: string | null
-  source: { name: string } | null
+  source: { name: string; kind: string } | null
 }
 
 const STATUS_META: Record<LeadStatus, { label: string; variant: 'default' | 'success' | 'warning' | 'secondary' | 'danger' }> = {
@@ -50,7 +51,7 @@ export default function LeadsPage() {
     const supabase = createClient()
     const { data } = await supabase
       .from('leads')
-      .select('id, name, phone, interest, message, status, created_at, converted_service_id, source:source_id(name)')
+      .select('id, name, phone, cpf, interest, message, status, created_at, converted_service_id, source:source_id(name, kind)')
       .order('created_at', { ascending: false })
     setLeads((data ?? []) as unknown as Lead[])
     setLoading(false)
@@ -132,9 +133,18 @@ export default function LeadsPage() {
                       <a href={`https://wa.me/55${lead.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 hover:text-emerald-600">
                         <Phone className="h-3.5 w-3.5 shrink-0" />{formatWhatsApp(lead.phone)}
                       </a>
-                      <p className="flex items-center gap-2 text-slate-500">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />Origem: <span className="font-medium text-slate-700">{lead.source?.name ?? 'Site'}</span>
-                      </p>
+                      {lead.cpf && (
+                        <p className="text-slate-500">CPF: <span className="font-medium text-slate-700">{formatCPF(lead.cpf)}</span></p>
+                      )}
+                      {lead.source?.kind === 'qr' ? (
+                        <p className="flex items-center gap-2 text-slate-500">
+                          <UserPlus className="h-3.5 w-3.5 shrink-0" />Indicação de <span className="font-medium text-slate-700">{lead.source.name}</span>
+                        </p>
+                      ) : (
+                        <p className="flex items-center gap-2 text-slate-500">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />Origem: <span className="font-medium text-slate-700">{lead.source?.name ?? 'Site'}</span>
+                        </p>
+                      )}
                       {lead.interest && (
                         <p className="flex items-center gap-2 text-slate-500">
                           <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">Interesse: {lead.interest}</span>

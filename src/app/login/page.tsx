@@ -281,7 +281,7 @@ export default function LoginPage() {
           )}
         </div>
         <p className="text-center text-white/80 text-xs font-medium mt-5">
-          Avelloz Motos Torre — João Pessoa
+          Grupo Sempre Motos — Bayeux, PB
         </p>
       </div>
     </div>

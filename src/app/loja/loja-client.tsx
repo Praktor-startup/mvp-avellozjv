@@ -7,6 +7,7 @@ import {
   Check, ChevronRight, MapPin, Phone, Gauge, Fuel, Zap, Usb,
   ShieldCheck, BadgeCheck, Clock, MessageCircle, Bike,
 } from 'lucide-react'
+import { validateCPF } from '@/lib/utils'
 
 // Identidade Avelloz extraída dos criativos: laranja vibrante + azul royal.
 const ORANGE = '#F26B21'
@@ -39,7 +40,7 @@ const BENEFITS = [
   { icon: ShieldCheck, title: 'Moto 0km com garantia', desc: 'Linha completa Avelloz, nova, com garantia de fábrica e revisão inclusa.' },
 ]
 
-const WHATSAPP = '5583999999999' // placeholder — equipe Avelloz Torre vai confirmar o número
+const WHATSAPP = '5583999999999' // placeholder — equipe Grupo Sempre Motos vai confirmar o número
 
 function maskPhone(v: string) {
   const d = v.replace(/\D/g, '').slice(0, 11)
@@ -50,11 +51,16 @@ function maskPhone(v: string) {
   return ''
 }
 
+function maskCPFInput(v: string) {
+  const d = v.replace(/\D/g, '').slice(0, 11)
+  return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+}
+
 export default function LojaClient() {
   const params = useSearchParams()
   const origem = params.get('o') || 'site'
 
-  const [form, setForm] = useState({ name: '', phone: '', interest: '', message: '' })
+  const [form, setForm] = useState({ name: '', phone: '', cpf: '', interest: '', message: '' })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -70,6 +76,10 @@ export default function LojaClient() {
       setError('Preencha seu nome e um WhatsApp válido.')
       return
     }
+    if (!validateCPF(form.cpf.replace(/\D/g, ''))) {
+      setError('Preencha um CPF válido.')
+      return
+    }
     setSending(true)
     try {
       const sb = createBrowserClient(
@@ -81,6 +91,7 @@ export default function LojaClient() {
         p_code: origem,
         p_name: form.name.trim(),
         p_phone: form.phone.replace(/\D/g, ''),
+        p_cpf: form.cpf.replace(/\D/g, ''),
         p_interest: form.interest || null,
         p_message: form.message.trim() || null,
       })
@@ -104,7 +115,7 @@ export default function LojaClient() {
             </div>
             <div className="leading-none">
               <p className="font-black tracking-tight" style={{ color: BLUE }}>AvelloZ</p>
-              <p className="text-[10px] font-semibold tracking-widest text-slate-400">MOTOS · TORRE</p>
+              <p className="text-[10px] font-semibold tracking-widest text-slate-400">GRUPO SEMPRE MOTOS</p>
             </div>
           </div>
           <a
@@ -124,13 +135,13 @@ export default function LojaClient() {
         <div className="relative max-w-6xl mx-auto px-5 py-14 sm:py-20 grid lg:grid-cols-2 gap-10 items-center">
           <div className="text-white">
             <span className="inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-5" style={{ backgroundColor: ORANGE }}>
-              Avelloz Motos · João Pessoa
+              Grupo Sempre Motos · Bayeux — PB
             </span>
             <h1 className="text-4xl sm:text-5xl font-black leading-[1.05]">
               Sua moto <span style={{ color: ORANGE }}>0km</span> com financiamento facilitado
             </h1>
             <p className="mt-5 text-blue-100 text-lg max-w-md">
-              Na Avelloz Torre, em João Pessoa, a gente aprova seu crédito na hora e coloca você pra rodar na sua primeira moto.
+              No Grupo Sempre Motos, em Bayeux — PB, a gente aprova seu crédito na hora e coloca você pra rodar na sua primeira moto.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button onClick={scrollToForm} className="inline-flex items-center gap-2 font-bold text-white px-6 py-3.5 rounded-full transition-transform hover:scale-105" style={{ backgroundColor: ORANGE }}>
@@ -206,7 +217,7 @@ export default function LojaClient() {
         <div>
           <h2 className="text-3xl font-black" style={{ color: BLUE }}>Simule sem compromisso</h2>
           <p className="text-slate-500 mt-2 max-w-md">
-            Deixe seu contato que um consultor da Avelloz Torre fala com você pelo WhatsApp com as melhores condições.
+            Deixe seu contato que um consultor do Grupo Sempre Motos fala com você pelo WhatsApp com as melhores condições.
           </p>
           <div className="mt-8 space-y-4">
             <div className="flex items-start gap-3">
@@ -214,8 +225,8 @@ export default function LojaClient() {
                 <MapPin className="h-5 w-5" style={{ color: BLUE }} />
               </div>
               <div>
-                <p className="font-bold text-slate-900">Avelloz Motos Torre</p>
-                <p className="text-sm text-slate-500">João Pessoa — PB</p>
+                <p className="font-bold text-slate-900">Grupo Sempre Motos</p>
+                <p className="text-sm text-slate-500">Bayeux — PB</p>
               </div>
             </div>
             <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group">
@@ -237,7 +248,7 @@ export default function LojaClient() {
                 <Check className="h-7 w-7" style={{ color: ORANGE }} />
               </div>
               <h3 className="text-xl font-black text-slate-900">Recebemos seu contato!</h3>
-              <p className="text-slate-500 mt-2">Em breve um consultor da Avelloz Torre vai falar com você. Quer adiantar?</p>
+              <p className="text-slate-500 mt-2">Em breve um consultor do Grupo Sempre Motos vai falar com você. Quer adiantar?</p>
               <a href={`https://wa.me/${WHATSAPP}`} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 font-bold text-white px-6 py-3 rounded-full" style={{ backgroundColor: ORANGE }}>
                 <MessageCircle className="h-4 w-4" />Chamar no WhatsApp
               </a>
@@ -258,6 +269,15 @@ export default function LojaClient() {
                 <input
                   value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: maskPhone(e.target.value) }))}
                   placeholder="(83) 90000-0000" inputMode="tel"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': ORANGE } as React.CSSProperties}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">CPF</label>
+                <input
+                  value={form.cpf} onChange={(e) => setForm((f) => ({ ...f, cpf: maskCPFInput(e.target.value) }))}
+                  placeholder="000.000.000-00" inputMode="numeric"
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:border-transparent"
                   style={{ '--tw-ring-color': ORANGE } as React.CSSProperties}
                 />
@@ -290,7 +310,7 @@ export default function LojaClient() {
               >
                 {sending ? 'Enviando...' : <>Quero que me chamem <ChevronRight className="h-4 w-4" /></>}
               </button>
-              <p className="text-xs text-slate-400 text-center">Seus dados são usados só para o atendimento da Avelloz Torre.</p>
+              <p className="text-xs text-slate-400 text-center">Seus dados são usados só para o atendimento do Grupo Sempre Motos.</p>
             </form>
           )}
         </div>
@@ -305,10 +325,10 @@ export default function LojaClient() {
             </div>
             <div className="leading-none">
               <p className="font-black tracking-tight">AvelloZ Motos</p>
-              <p className="text-[11px] text-blue-200">Torre · João Pessoa — PB</p>
+              <p className="text-[11px] text-blue-200">Grupo Sempre Motos · Bayeux — PB</p>
             </div>
           </div>
-          <p className="text-sm text-blue-200">© {new Date().getFullYear()} Avelloz Motos Torre. Todos os direitos reservados.</p>
+          <p className="text-sm text-blue-200">© {new Date().getFullYear()} Grupo Sempre Motos. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

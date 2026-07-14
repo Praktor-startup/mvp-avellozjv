@@ -13,6 +13,7 @@ export interface Seller {
 export interface MotorcycleType {
   id: string
   model: string
+  price: number | null
   active: boolean
   created_at: string
 }

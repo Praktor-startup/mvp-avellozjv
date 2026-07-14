@@ -18,7 +18,13 @@ export default function MotosPage() {
   const [saving, setSaving] = useState(false)
   const [editing, setEditing] = useState<MotorcycleType | null>(null)
   const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
   const [error, setError] = useState('')
+
+  function formatPrice(v: number | null) {
+    if (v == null) return null
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  }
 
   async function load() {
     const supabase = createClient()
@@ -29,18 +35,21 @@ export default function MotosPage() {
 
   useEffect(() => { load() }, [])
 
-  function openAdd() { setEditing(null); setName(''); setError(''); setShowModal(true) }
-  function openEdit(m: MotorcycleType) { setEditing(m); setName(m.model); setError(''); setShowModal(true) }
+  function openAdd() { setEditing(null); setName(''); setPrice(''); setError(''); setShowModal(true) }
+  function openEdit(m: MotorcycleType) { setEditing(m); setName(m.model); setPrice(m.price != null ? String(m.price).replace('.', ',') : ''); setError(''); setShowModal(true) }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) { setError('Modelo obrigatório'); return }
+    const cleanPrice = price.trim().replace(/\./g, '').replace(',', '.')
+    const parsedPrice = cleanPrice ? Number(cleanPrice) : null
+    if (cleanPrice && Number.isNaN(parsedPrice)) { setError('Valor inválido'); return }
     setSaving(true)
     const supabase = createClient()
     if (editing) {
-      await supabase.from('motorcycle_types').update({ model: name.trim() }).eq('id', editing.id)
+      await supabase.from('motorcycle_types').update({ model: name.trim(), price: parsedPrice }).eq('id', editing.id)
     } else {
-      await supabase.from('motorcycle_types').insert({ model: name.trim() })
+      await supabase.from('motorcycle_types').insert({ model: name.trim(), price: parsedPrice })
     }
     await load()
     setShowModal(false)
@@ -72,7 +81,10 @@ export default function MotosPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-slate-900 truncate">{m.model}</p>
-                  <Badge variant={m.active ? 'success' : 'secondary'} className="mt-1">{m.active ? 'Ativo' : 'Inativo'}</Badge>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant={m.active ? 'success' : 'secondary'}>{m.active ? 'Ativo' : 'Inativo'}</Badge>
+                    {formatPrice(m.price) && <span className="text-xs text-slate-500">{formatPrice(m.price)}</span>}
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => openEdit(m)}><Edit className="h-3.5 w-3.5" /></Button>
@@ -87,6 +99,7 @@ export default function MotosPage() {
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? 'Editar modelo' : 'Novo modelo'} size="sm">
         <form onSubmit={handleSave} className="p-6 space-y-4">
           <Input label="Modelo" required value={name} onChange={(e) => { setName(e.target.value); setError('') }} error={error} placeholder="Ex: Honda CG 160" />
+          <Input label="Valor de consulta (R$)" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Ex: 12.500,00" inputMode="decimal" />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
             <Button type="submit" loading={saving}>Salvar</Button>
