@@ -57,6 +57,13 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<RecentService[]>([])
   const [reminders, setReminders] = useState<UpcomingReminder[]>([])
   const [loading, setLoading] = useState(true)
+  // "now" formatado em texto (dia da semana, mês) diverge entre o servidor (SSR,
+  // roda em UTC) e o navegador do usuário perto da virada do dia no fuso do Brasil,
+  // causando erro de hidratação do React que interrompe o carregamento dos dados
+  // (só resolvia com F5). Adia a exibição desse texto para depois da hidratação —
+  // SSR e o primeiro render no client ficam idênticos (vazio), sem afetar as queries.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const now = new Date()
   const { start: monthStart, end: monthEnd } = monthRange(now.getFullYear(), now.getMonth() + 1)
@@ -127,16 +134,16 @@ export default function DashboardPage() {
       {/* Header claro + métricas principais (Claude Design) */}
       <div className="px-5 py-6 sm:px-8 sm:py-7 bg-white border-b border-slate-200">
         <div className="max-w-6xl mx-auto">
-          <p className="text-slate-400 text-xs font-medium mb-0.5">{todayFull}</p>
+          <p className="text-slate-400 text-xs font-medium mb-0.5">{mounted ? todayFull : ' '}</p>
           <div className="flex flex-wrap items-center gap-2.5 mb-2">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold">
               <Calendar className="w-3 h-3" />
-              Referente a {currentMonthLabel}
+              Referente a {mounted ? currentMonthLabel : '...'}
             </span>
           </div>
           <p className="text-xs text-slate-400 mb-6">
-            Os números abaixo mostram só {currentMonthLabel}. Para outros períodos, veja o{' '}
+            Os números abaixo mostram só {mounted ? currentMonthLabel : '...'}. Para outros períodos, veja o{' '}
             <Link href="/relatorios" className="text-brand-600 font-semibold hover:underline">Relatório</Link>.
           </p>
 
