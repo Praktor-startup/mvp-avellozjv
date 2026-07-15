@@ -9,18 +9,14 @@ import {
   LayoutDashboard,
   ClipboardList,
   Bell,
-  Users,
   Bike,
-  Tag,
-  AlertCircle,
   BarChart2,
   LogOut,
   X,
   HelpCircle,
   QrCode,
   Inbox,
-  UserCog,
-  Megaphone,
+  Settings,
 } from 'lucide-react'
 
 type NavItem =
@@ -39,12 +35,7 @@ const nav: NavItem[] = [
   { divider: true },
   { label: 'Relatório', href: '/relatorios', icon: BarChart2 },
   { divider: true },
-  { label: 'Equipe', href: '/equipe', icon: UserCog, gestorOnly: true, tour: 'nav-equipe' },
-  { label: 'Vendedores', href: '/vendedores', icon: Users, gestorOnly: true, tour: 'nav-vendedores' },
-  { label: 'Tipos de Moto', href: '/motos', icon: Bike, gestorOnly: true },
-  { label: 'Status', href: '/status', icon: Tag, gestorOnly: true },
-  { label: 'Motivos de Perda', href: '/motivos-perda', icon: AlertCircle, gestorOnly: true },
-  { label: 'Canal de Origem', href: '/canais', icon: Megaphone, gestorOnly: true },
+  { label: 'Configurações', href: '/configuracoes', icon: Settings, gestorOnly: true, tour: 'nav-configuracoes' },
 ]
 
 interface SidebarProps {

@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Menu, Bell, HelpCircle, Lock } from 'lucide-react'
 
 // Rotas de gestão da loja — bloqueadas para vendedor (que só usa o próprio acesso)
-const ADMIN_PREFIXES = ['/equipe', '/vendedores', '/motos', '/status', '/motivos-perda', '/leads', '/origens']
+const ADMIN_PREFIXES = ['/configuracoes', '/leads', '/origens']
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)

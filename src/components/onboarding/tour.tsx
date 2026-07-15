@@ -24,9 +24,9 @@ function buildSteps(isDesktop: boolean): DriveStep[] {
       },
     },
     sidebarStep(
-      '[data-tour="nav-vendedores"]',
+      '[data-tour="nav-configuracoes"]',
       '1. Cadastre seus vendedores',
-      'Comece por aqui. Todo atendimento é vinculado a um vendedor, então cadastre sua equipe primeiro.',
+      'Comece por aqui. Em Configurações → Vendedores você cadastra sua equipe — todo atendimento é vinculado a um vendedor.',
     ),
     sidebarStep(
       '[data-tour="nav-atendimentos"]',
