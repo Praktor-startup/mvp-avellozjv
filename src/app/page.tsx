@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import {
   Bike, ArrowRight, LogIn, Mail, Lock,
@@ -35,7 +34,6 @@ const FAQS = [
 ]
 
 export default function LandingPage() {
-  const router = useRouter()
   const [tab, setTab] = useState<'entrar' | 'criar'>('entrar')
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -75,8 +73,10 @@ export default function LandingPage() {
     const { error: authError } = await authClient().auth.signInWithPassword({ email, password })
     if (authError) { setError('E-mail ou senha incorretos'); setLoading(false); return }
     await ensureOrg()
-    router.push('/dashboard')
-    router.refresh()
+    // Reload completo em vez de navegação client-side: evita a corrida em que
+    // ensure_org/my_role/organizations respondem 404 por a sessão nova ainda
+    // não ter sido totalmente reconhecida pelo servidor (mesmo fix do /login).
+    window.location.href = '/dashboard'
   }
 
   async function handleCadastro(e: React.FormEvent) {
@@ -90,7 +90,7 @@ export default function LandingPage() {
       setError(authError.message === 'User already registered' ? 'E-mail já cadastrado' : 'Erro ao criar conta. Tente novamente.')
       setLoading(false); return
     }
-    if (data.session) { await ensureOrg(); router.push('/dashboard'); router.refresh(); return }
+    if (data.session) { await ensureOrg(); window.location.href = '/dashboard'; return }
     setSuccess('Conta criada! Verifique seu e-mail para confirmar.')
     setLoading(false)
   }
