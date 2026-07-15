@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +9,6 @@ import { Bike, AlertTriangle, CheckCircle } from 'lucide-react'
 type Mode = 'login' | 'cadastro'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -71,8 +69,13 @@ export default function LoginPage() {
       return
     }
     await ensureOrg()
-    router.push('/dashboard')
-    router.refresh()
+    // Navegação client-side (router.push) reusa o client Supabase já em memória
+    // antes da sessão nova estar totalmente reconhecida pelo servidor — isso
+    // fazia ensure_org/my_role/organizations responderem 404 logo após o login
+    // e a tela renderizar tudo zerado até o usuário dar F5. Um reload completo
+    // (que passa pelo middleware, o qual já valida a sessão corretamente) evita
+    // essa corrida — é exatamente o que resolvia o bug manualmente.
+    window.location.href = '/dashboard'
   }
 
   async function handleCadastro(e: React.FormEvent) {
@@ -107,8 +110,7 @@ export default function LoginPage() {
     // Se sessão foi criada imediatamente (confirmação desativada no Supabase)
     if (data.session) {
       await ensureOrg()
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/dashboard'
       return
     }
     // Caso contrário, pede para confirmar e-mail
